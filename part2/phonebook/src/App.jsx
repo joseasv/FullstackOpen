@@ -1,21 +1,20 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
 import Filter from "./components/Filter";
+import personService from "./services/Persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
-  const [backupPersons, setBackupPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [newFilter, setNewFilter] = useState("");
 
   useEffect(() => {
-    console.log("effect");
-    axios.get("http://localhost:3001/persons").then((response) => {
-      console.log("promise fulfilled");
-      setPersons(response.data);
+    console.log("effect initialPersons");
+
+    personService.getAll().then((initialPersons) => {
+      setPersons(initialPersons);
     });
   }, []);
 
@@ -26,7 +25,6 @@ const App = () => {
     const newPerson = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1,
     };
 
     const personFound = persons.find((person) => person.name === newName);
@@ -34,10 +32,11 @@ const App = () => {
     if (personFound !== undefined) {
       alert(`${newName} is already added to phonebook`);
     } else {
-      setPersons(persons.concat(newPerson));
-      setBackupPersons(persons);
-      setNewName("");
-      setNewNumber("");
+      personService.create(newPerson).then((returnedPerson) => {
+        setPersons(persons.concat(returnedPerson));
+        setNewName("");
+        setNewNumber("");
+      });
     }
   };
 
@@ -46,13 +45,14 @@ const App = () => {
     console.log("filtering list");
 
     if (newFilter === "") {
-      setPersons(backupPersons);
+      personService.getAll().then((initialPersons) => {
+        setPersons(initialPersons);
+      });
     } else {
       const filteredPersonsList = persons.filter((person) =>
         person.name.toLowerCase().includes(newFilter),
       );
 
-      setBackupPersons(persons);
       console.log("filteredPersonsList", filteredPersonsList);
 
       setPersons(filteredPersonsList);
