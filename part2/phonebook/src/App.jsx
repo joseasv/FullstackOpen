@@ -30,13 +30,51 @@ const App = () => {
     const personFound = persons.find((person) => person.name === newName);
     console.log("personFound", personFound);
     if (personFound !== undefined) {
-      alert(`${newName} is already added to phonebook`);
+      if (
+        confirm(
+          `${newName} is already added to phonebook. Replace the old number with this new one?`,
+        )
+      ) {
+        const changedPerson = { ...personFound, number: newNumber };
+        personService
+          .update(changedPerson)
+          .then((response) => {
+            console.log("Persons service update response", response);
+            const newPersons = persons.map((p) =>
+              p.id !== personFound.id ? p : response,
+            );
+            console.log("newPersons", newPersons);
+            setPersons(newPersons);
+          })
+          .catch((error) => {
+            alert(`The person ${newName} was already deleted from server.`);
+            setPersons(persons.filter((p) => p.id !== personFound.id));
+          });
+      }
     } else {
       personService.create(newPerson).then((returnedPerson) => {
         setPersons(persons.concat(returnedPerson));
         setNewName("");
         setNewNumber("");
       });
+    }
+  };
+
+  const deletePerson = (name, id) => {
+    console.log("deleting", name, "with id", id);
+
+    if (window.confirm(`Delete ${name} ?`)) {
+      personService
+        .deletePerson(id)
+        .then(() => {
+          window.confirm(`The person ${name} was deleted succesfully`);
+          setPersons(persons.filter((p) => p.id !== id));
+        })
+        .catch((error) => {
+          window.confirm(
+            `Warning: The person ${name} doesn't exist in the database or was already deleted`,
+          );
+        });
     }
   };
 
@@ -96,7 +134,7 @@ const App = () => {
         }}
       />
       <h3>Numbers</h3>
-      <Persons persons={persons} />
+      <Persons persons={persons} deletePerson={deletePerson} />
     </div>
   );
 };

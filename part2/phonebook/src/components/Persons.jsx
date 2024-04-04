@@ -1,5 +1,3 @@
-import personService from "../services/Persons";
-
 const Person = ({ name, number, deleteHandler, id }) => {
   return (
     <div>
@@ -8,15 +6,7 @@ const Person = ({ name, number, deleteHandler, id }) => {
   );
 };
 
-const Persons = ({ persons }) => {
-  const handleDeleteClick = (name, id) => {
-    console.log("deleting", name, "with id", id);
-
-    /*if (window.confirm("Delete", name, "?")) {
-      personService.deletePerson(id);
-    }*/
-  };
-
+const Persons = ({ persons, deletePerson }) => {
   return (
     <div>
       {persons.map((person) => (
@@ -25,24 +15,7 @@ const Persons = ({ persons }) => {
           number={person.number}
           key={person.id}
           id={person.id}
-          deleteHandler={() => {
-            console.log("deleting", person.name, "with id", person.id);
-
-            if (window.confirm(`Delete ${person.name} ?`)) {
-              personService
-                .deletePerson(person.id)
-                .then(() => {
-                  window.confirm(
-                    `The person ${person.name} was deleted succesfully`,
-                  );
-                })
-                .catch((error) => {
-                  window.confirm(
-                    `Warning: The person ${person.name} doesn't exist in the database or was already deleted`,
-                  );
-                });
-            }
-          }}
+          deleteHandler={() => deletePerson(person.name, person.id)}
         />
       ))}
     </div>
