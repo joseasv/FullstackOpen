@@ -3,12 +3,28 @@ import Persons from "./components/Persons";
 import PersonForm from "./components/PersonForm";
 import Filter from "./components/Filter";
 import personService from "./services/Persons";
+import Notification from "./components/Notification";
+import "./index.css";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [newFilter, setNewFilter] = useState("");
+  const [newMessageData, setMessageData] = useState({
+    message: null,
+    isAlert: false,
+  });
+
+  const showTempNotification = (message, isAlert) => {
+    setMessageData({ message, isAlert });
+    setTimeout(() => {
+      setMessageData({
+        message: null,
+        isAlert: false,
+      });
+    }, 4000);
+  };
 
   useEffect(() => {
     console.log("effect initialPersons");
@@ -39,7 +55,9 @@ const App = () => {
         personService
           .update(changedPerson)
           .then((response) => {
+            showTempNotification(`${newName}'s phone was updated`, false);
             console.log("Persons service update response", response);
+
             const newPersons = persons.map((p) =>
               p.id !== personFound.id ? p : response,
             );
@@ -47,12 +65,16 @@ const App = () => {
             setPersons(newPersons);
           })
           .catch((error) => {
-            alert(`The person ${newName} was already deleted from server.`);
+            showTempNotification(
+              `The person ${newName} was already deleted from server.`,
+              true,
+            );
             setPersons(persons.filter((p) => p.id !== personFound.id));
           });
       }
     } else {
       personService.create(newPerson).then((returnedPerson) => {
+        showTempNotification(`${newName} was added`, false);
         setPersons(persons.concat(returnedPerson));
         setNewName("");
         setNewNumber("");
@@ -67,13 +89,18 @@ const App = () => {
       personService
         .deletePerson(id)
         .then(() => {
-          window.confirm(`The person ${name} was deleted succesfully`);
+          showTempNotification(
+            `The person ${name} was deleted succesfully`,
+            false,
+          );
           setPersons(persons.filter((p) => p.id !== id));
         })
         .catch((error) => {
-          window.confirm(
+          showTempNotification(
             `Warning: The person ${name} doesn't exist in the database or was already deleted`,
+            true,
           );
+          setPersons(persons.filter((p) => p.id !== id));
         });
     }
   };
@@ -99,19 +126,19 @@ const App = () => {
   };
 
   const handleNameChange = (event) => {
-    console.log("handleNameChange", event.target.value);
+    //console.log("handleNameChange", event.target.value);
 
     setNewName(event.target.value);
   };
 
   const handleNumberChange = (event) => {
-    console.log("handleNameChange", event.target.value);
+    //console.log("handleNameChange", event.target.value);
 
     setNewNumber(event.target.value);
   };
 
   const handleFilterChange = (event) => {
-    console.log("handleFilterChange", event.target.value);
+    //console.log("handleFilterChange", event.target.value);
 
     setNewFilter(event.target.value.toLowerCase());
   };
@@ -119,6 +146,10 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification
+        message={newMessageData.message}
+        isAlert={newMessageData.isAlert}
+      />
       <Filter
         onSubmitHandler={applyFilter}
         onChangeHandler={handleFilterChange}
