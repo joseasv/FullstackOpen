@@ -1,8 +1,7 @@
 import CountryDetails from "./CountryDetails";
-import CountryList from "./CountryList";
 
-const CountryResult = ({ result }) => {
-  console.log("CountryResult", result);
+const CountryResult = ({ result, onClickHandler }) => {
+  //console.log("CountryResult", result);
 
   if (result.length === 0) {
     return <div>No matches found</div>;
@@ -14,7 +13,10 @@ const CountryResult = ({ result }) => {
         return <CountryDetails details={result[0]} />;
       } else {
         return result.map((country) => (
-          <div key={country.cca3}>{country.name.common}</div>
+          <div key={country.cca3}>
+            {country.name.common}{" "}
+            <button onClick={() => onClickHandler(country)}>show</button>
+          </div>
         ));
       }
     }

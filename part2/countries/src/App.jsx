@@ -7,29 +7,17 @@ function App() {
   const [countryQuery, setNewCountryQuery] = useState("");
   const [newCountries, setNewCountries] = useState([]);
 
-  /*useEffect(() => {
-    countriesService.getAll().then((countries) => {
-      if (countries) {
-        if (countries.length > 10) {
-          setNewCountries({
-            result: "Too many matches, specify another filter",
-          });
-        }
-      }
-    });
-  }, []);*/
-
   const executeQuery = (event) => {
     event.preventDefault();
-    console.log("executeQuery ");
+    //     console.log("executeQuery ");
 
     if (countryQuery !== "") {
-      console.log("not empty countryQuery");
+      //       console.log("not empty countryQuery");
       countriesService.getAll().then((countries) => {
         const filteredCountries = countries.filter((country) =>
           country.name.common.toLowerCase().includes(countryQuery),
         );
-        console.log("filteredCountries", filteredCountries);
+        //console.log("filteredCountries", filteredCountries);
 
         setNewCountries(filteredCountries);
       });
@@ -37,12 +25,16 @@ function App() {
   };
 
   const handleQueryChange = (event) => {
-    console.log("setNewCountryQuery", event.target.value.toLowerCase());
+    //console.log("setNewCountryQuery", event.target.value.toLowerCase());
 
     setNewCountryQuery(event.target.value.toLowerCase());
   };
 
-  console.log(newCountries);
+  const onClickShow = (country) => {
+    setNewCountries([country]);
+  };
+
+  //console.log(newCountries);
   return (
     <div>
       <SearchForm
@@ -50,7 +42,7 @@ function App() {
         onSubmitHandler={executeQuery}
         filter={countryQuery}
       />
-      <CountryResult result={newCountries} />
+      <CountryResult result={newCountries} onClickHandler={onClickShow} />
     </div>
   );
 }
