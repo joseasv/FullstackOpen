@@ -52,6 +52,7 @@ const App = () => {
         )
       ) {
         const changedPerson = { ...personFound, number: newNumber };
+        console.log("updated person, changedPerson");
         personService
           .update(changedPerson)
           .then((response) => {
