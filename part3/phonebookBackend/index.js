@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 var morgan = require("morgan");
 const cors = require("cors");
@@ -13,35 +14,16 @@ morgan.token("data", function getData(req) {
 app.use(express.json());
 app.use(morgan(":method :url :response-time :data"));
 
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
+const Person = require("./models/person");
 
 app.get("/", (request, response) => {
   response.send("dist/index.html");
 });
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({}).then((notes) => {
+    response.json(notes);
+  });
 });
 
 app.get("/info", (request, response) => {
@@ -50,14 +32,9 @@ app.get("/info", (request, response) => {
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((note) => note.id === id);
-
-  if (person) {
+  Person.findById(request.params.id).then((person) => {
     response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
@@ -67,14 +44,6 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-const generateId = () => {
-  const min = 0;
-  const max = Number.MAX_SAFE_INTEGER;
-  const minCeiled = Math.ceil(min);
-  const maxFloored = Math.floor(max);
-  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); //
-};
-
 app.post("/api/persons", (request, response) => {
   const body = request.body;
   console.log(request.body);
@@ -83,34 +52,30 @@ app.post("/api/persons", (request, response) => {
       error: "name must be set",
     });
   } else {
-    const personWithSameName = persons.find((person) => {
-      return person.name === body.name;
+    Person.find({ name: body.name }).then((result) => {
+      console.log("Person find by name, result", result);
+      if (result.length === 0) {
+        if (!body.number) {
+          return response.status(400).json({
+            error: "number must be set",
+          });
+        }
+
+        const person = new Person({
+          name: body.name,
+          number: body.number,
+        });
+
+        person.save().then((savedPerson) => {
+          response.json(savedPerson);
+        });
+      } else {
+        return response.status(400).json({
+          error: "name must be unique",
+        });
+      }
     });
-
-    console.log("personWithSameName", personWithSameName);
-
-    if (personWithSameName) {
-      return response.status(400).json({
-        error: "name must be unique",
-      });
-    }
   }
-
-  if (!body.number) {
-    return response.status(400).json({
-      error: "number must be set",
-    });
-  }
-
-  const person = {
-    name: body.name,
-    number: body.number,
-    id: generateId(),
-  };
-
-  persons = persons.concat(person);
-
-  response.json(person);
 });
 
 const unknownEndpoint = (request, response) => {
