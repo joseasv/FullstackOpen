@@ -74,12 +74,19 @@ const App = () => {
           });
       }
     } else {
-      personService.create(newPerson).then((returnedPerson) => {
-        showTempNotification(`${newName} was added`, false);
-        setPersons(persons.concat(returnedPerson));
-        setNewName("");
-        setNewNumber("");
-      });
+      personService
+        .create(newPerson)
+        .then((returnedPerson) => {
+          showTempNotification(`${newName} was added`, false);
+          setPersons(persons.concat(returnedPerson));
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((error) => {
+          console.log("personService.create catch error", error);
+          const message = error.response.data.split("\n")[7].split("<br>")[0];
+          showTempNotification(message.substring(5, message.length), true);
+        });
     }
   };
 
