@@ -21,7 +21,19 @@ const personSchema = new mongoose.Schema({
     minLength: 3,
     required: true,
   },
-  number: String,
+  number: {
+    type: String,
+    minLength: 8,
+    validate: {
+      validator: (number) => {
+        console.log("testing", number);
+        return /\d{2,3}?-\d{7,}/.test(number);
+      },
+      message: (props) =>
+        "The number must composed of two or three numbers, following with a - character and ending with numbers",
+    },
+    required: true,
+  },
 });
 
 personSchema.set("toJSON", {

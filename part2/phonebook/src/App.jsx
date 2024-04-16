@@ -85,6 +85,7 @@ const App = () => {
         .catch((error) => {
           console.log("personService.create catch error", error);
           const message = error.response.data.split("\n")[7].split("<br>")[0];
+          console.log(message);
           showTempNotification(message.substring(5, message.length), true);
         });
     }
