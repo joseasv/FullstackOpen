@@ -8,7 +8,7 @@ mongoose.set("strictQuery", false);
 
 mongoose
   .connect(url)
-  .then((result) => {
+  .then(() => {
     console.log("connected to MongoDB");
   })
   .catch((error) => {
@@ -29,7 +29,7 @@ const personSchema = new mongoose.Schema({
         console.log("testing", number);
         return /\d{2,3}?-\d{7,}/.test(number);
       },
-      message: (props) =>
+      message: () =>
         "The number must composed of two or three numbers, following with a - character and ending with numbers",
     },
     required: true,
@@ -37,7 +37,7 @@ const personSchema = new mongoose.Schema({
 });
 
 personSchema.set("toJSON", {
-  transform: (document, returnedObject) => {
+  transform: (returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
     delete returnedObject.__v;

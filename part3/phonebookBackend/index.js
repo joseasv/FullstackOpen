@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-var morgan = require("morgan");
+const morgan = require("morgan");
 const cors = require("cors");
 
 const app = express();
@@ -16,17 +16,17 @@ app.use(morgan(":method :url :response-time :data"));
 
 const Person = require("./models/person");
 
-app.get("/", (request, response) => {
+app.get("/", (response) => {
   response.send("dist/index.html");
 });
 
-app.get("/api/persons", (request, response) => {
+app.get("/api/persons", (response) => {
   Person.find({}).then((persons) => {
     response.json(persons);
   });
 });
 
-app.get("/info", (request, response) => {
+app.get("/info", (response) => {
   Person.find({}).then((persons) => {
     response.send(`<p>Phonebook has info for ${persons.length} people</p>
   <p>${Date()}</p>`);
@@ -41,7 +41,7 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then((result) => {
+    .then(() => {
       response.status(204).end();
     })
     .catch((error) => next(error));
@@ -98,13 +98,13 @@ app.post("/api/persons", (request, response, next) => {
   }
 });
 
-const unknownEndpoint = (request, response) => {
+const unknownEndpoint = (response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
 app.use(unknownEndpoint);
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, response, next) => {
   console.error(error.message);
 
   if (error.name === "CastError") {

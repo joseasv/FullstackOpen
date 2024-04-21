@@ -28,7 +28,7 @@ const person = new Person({
 });
 
 if (name !== undefined && number !== undefined) {
-  person.save().then((result) => {
+  person.save().then(() => {
     console.log(`Added ${name} number ${number} to phonebook`);
     mongoose.connection.close();
   });
