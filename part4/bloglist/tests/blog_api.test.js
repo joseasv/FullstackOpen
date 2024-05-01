@@ -34,6 +34,29 @@ test("checking the unique identifier is named id", async () => {
   assert.ok("id" in response.body);
 });
 
+test("a valid blog can be added ", async () => {
+  const newBlog = {
+    title: "Premature refactoring is the root of many bad things",
+    author: "Nicolas Carlo",
+    url: "https://understandlegacycode.com/blog/refactoring-rule-of-three/#:~:text=Premature%20refactoring%20is%20the%20root,You're%20onto%20something",
+    likes: 5,
+  };
+
+  await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
+
+  const blogsAtEnd = await helper.blogsInDb();
+  assert.strictEqual(blogsAtEnd.length, 3);
+
+  const titles = blogsAtEnd.map((n) => n.title);
+  assert(
+    titles.includes("Premature refactoring is the root of many bad things"),
+  );
+});
+
 after(async () => {
   await mongoose.connection.close();
 });
