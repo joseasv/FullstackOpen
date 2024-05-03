@@ -57,6 +57,59 @@ test("a valid blog can be added ", async () => {
   );
 });
 
+test("if the likes property is missing it will default to zero", async () => {
+  const newBlogWithoutLikes = {
+    title: "Math for game developers",
+    author: "Pikuma",
+    url: "https://pikuma.com/blog/math-for-game-developers",
+  };
+
+  const response = await api
+    .post("/api/blogs")
+    .send(newBlogWithoutLikes)
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
+
+  assert.strictEqual(response.body.likes, 0);
+});
+
+test("if the title or url properties are missing the server will respond with 400 Bad Request", async () => {
+  const newBlogWithoutTitle = {
+    author: "Pikuma",
+    url: "https://pikuma.com/blog/math-for-game-developers",
+    likes: 0,
+  };
+
+  let response = await api
+    .post("/api/blogs")
+    .send(newBlogWithoutTitle)
+    .expect(400);
+
+  assert.deepStrictEqual(response.body, {});
+
+  const newBlogWithoutURL = {
+    title: "Math for game developers",
+    author: "Pikuma",
+    likes: 0,
+  };
+
+  response = await api.post("/api/blogs").send(newBlogWithoutURL).expect(400);
+
+  assert.deepStrictEqual(response.body, {});
+
+  const newBlogWithoutURLAndTitle = {
+    author: "Pikuma",
+    likes: 0,
+  };
+
+  response = await api
+    .post("/api/blogs")
+    .send(newBlogWithoutURLAndTitle)
+    .expect(400);
+
+  assert.deepStrictEqual(response.body, {});
+});
+
 after(async () => {
   await mongoose.connection.close();
 });

@@ -18,8 +18,16 @@ blogsRouter.get("/:id", async (request, response) => {
 blogsRouter.post("/", async (request, response) => {
   const blog = new Blog(request.body);
 
-  const savedBlog = await blog.save();
-  response.status(201).json(savedBlog);
+  if (request.body.id === undefined) {
+    blog.likes = 0;
+  }
+
+  if (request.body.title === undefined || request.body.url === undefined) {
+    response.status(400).end();
+  } else {
+    const savedBlog = await blog.save();
+    response.status(201).json(savedBlog);
+  }
 });
 
 module.exports = blogsRouter;
