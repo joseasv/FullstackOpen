@@ -1,4 +1,4 @@
-const { test, after, beforeEach } = require("node:test");
+const { test, after, beforeEach, describe } = require("node:test");
 const assert = require("node:assert");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
@@ -85,7 +85,9 @@ test("if the title or url properties are missing the server will respond with 40
     .send(newBlogWithoutTitle)
     .expect(400);
 
-  assert.deepStrictEqual(response.body, {});
+  let totalBlogs = await helper.blogsInDb();
+
+  assert.strictEqual(totalBlogs.length, 2);
 
   const newBlogWithoutURL = {
     title: "Math for game developers",
@@ -95,7 +97,8 @@ test("if the title or url properties are missing the server will respond with 40
 
   response = await api.post("/api/blogs").send(newBlogWithoutURL).expect(400);
 
-  assert.deepStrictEqual(response.body, {});
+  totalBlogs = await helper.blogsInDb();
+  assert.strictEqual(totalBlogs.length, 2);
 
   const newBlogWithoutURLAndTitle = {
     author: "Pikuma",
@@ -107,7 +110,68 @@ test("if the title or url properties are missing the server will respond with 40
     .send(newBlogWithoutURLAndTitle)
     .expect(400);
 
-  assert.deepStrictEqual(response.body, {});
+  totalBlogs = await helper.blogsInDb();
+  assert.strictEqual(totalBlogs.length, 2);
+});
+
+describe("deletion of a blog", () => {
+  test("succeeds with status code 204 if id is valid", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogToDelete = blogsAtStart[0];
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+
+    const blogsAtEnd = await helper.blogsInDb();
+
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1);
+
+    const titles = blogsAtEnd.map((r) => r.title);
+    //console.log("titles", titles);
+    assert(!titles.includes(blogToDelete.title));
+  });
+
+  test("fails with status code 404 if the blog to delete doesn't exist", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogDoesntExist = new Blog(helper.listWithMoreThanOneBlog[3]);
+
+    await api.delete(`/api/blogs/${blogDoesntExist.id}`).expect(404);
+
+    const blogsAtEnd = await helper.blogsInDb();
+
+    assert.strictEqual(blogsAtStart.length, blogsAtEnd.length);
+
+    const titles = blogsAtEnd.map((r) => r.title);
+    //console.log("titles", titles);
+    assert(!titles.includes(blogDoesntExist.title));
+  });
+});
+
+describe("updating a blog", () => {
+  test("succeeds with status code 200 if the blog to update exists", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogToUpdate = blogsAtStart[0];
+
+    const response = await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send({ likes: 200 })
+      .expect(200);
+
+    assert.strictEqual(response.body.likes, 200);
+  });
+
+  test("fails with status code 400 if the blog to update doesn't exists", async () => {
+    const blogsAtStart = await helper.blogsInDb();
+    const blogToUpdate = new Blog(helper.listWithMoreThanOneBlog[2]);
+
+    const response = await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send({ likes: 200 })
+      .expect(400);
+
+    const titles = blogsAtStart.map((r) => r.title);
+    //console.log("titles", titles);
+    assert(!titles.includes(blogToUpdate.title));
+  });
 });
 
 after(async () => {
