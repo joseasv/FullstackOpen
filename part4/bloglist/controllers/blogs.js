@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
 const blogsRouter = require("express").Router();
+const middleware = require("../utils/middleware");
 const Blog = require("../models/blog");
 const User = require("../models/user");
 
@@ -17,24 +17,10 @@ blogsRouter.get("/:id", async (request, response) => {
   }
 });
 
-const getTokenFrom = (request) => {
-  const authorization = request.get("authorization");
-  if (authorization && authorization.startsWith("Bearer ")) {
-    return authorization.replace("Bearer ", "");
-  }
-  return null;
-};
-
-blogsRouter.post("/", async (request, response) => {
+blogsRouter.post("/", middleware.userExtractor, async (request, response) => {
   const body = request.body;
 
-  //const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET);
-  const decodedToken = jwt.verify(request.token, process.env.SECRET);
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: "token invalid" });
-  }
-  const user = await User.findById(decodedToken.id);
-
+  const user = request.user;
   const blog = new Blog({
     title: body.title,
     author: body.author,
@@ -60,15 +46,26 @@ blogsRouter.post("/", async (request, response) => {
   }
 });
 
-blogsRouter.delete("/:id", async (request, response) => {
-  const deletedBlog = await Blog.findOneAndDelete({ _id: request.params.id });
+blogsRouter.delete(
+  "/:id",
+  middleware.userExtractor,
+  async (request, response) => {
+    const body = request.body;
+    const user = request.user;
+    const blogToDelete = await Blog.findById({ _id: request.params.id });
 
-  if (deletedBlog) {
-    response.status(204).json(deletedBlog);
-  } else {
-    response.status(404).end();
-  }
-});
+    if (blogToDelete) {
+      if (blogToDelete.user.toString() === user.id.toString()) {
+        const deletedBlog = await Blog.findOneAndDelete({
+          _id: request.params.id,
+        });
+        response.status(204).json(deletedBlog);
+      }
+    } else {
+      response.status(404).end();
+    }
+  },
+);
 
 blogsRouter.put("/:id", async (request, response) => {
   const newLikes = request.body.likes;
