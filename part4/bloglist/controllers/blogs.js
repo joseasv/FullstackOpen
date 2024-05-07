@@ -29,8 +29,6 @@ blogsRouter.post("/", middleware.userExtractor, async (request, response) => {
     user: user.id,
   });
 
-  console.log("random user", user);
-
   if (request.body.title === undefined || request.body.url === undefined) {
     response
       .status(400)
@@ -50,7 +48,6 @@ blogsRouter.delete(
   "/:id",
   middleware.userExtractor,
   async (request, response) => {
-    const body = request.body;
     const user = request.user;
     const blogToDelete = await Blog.findById({ _id: request.params.id });
 

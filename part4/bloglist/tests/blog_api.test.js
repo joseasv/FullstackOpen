@@ -1,21 +1,38 @@
 const { test, after, beforeEach, describe } = require("node:test");
 const assert = require("node:assert");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app");
 const Blog = require("../models/blog");
+const User = require("../models/user");
 const helper = require("./test_helper");
 
 const api = supertest(app);
+let token = undefined;
 
 beforeEach(async () => {
   await Blog.deleteMany({});
 
+  const testUser = await User.findOne({ username: "root" });
+  const userForToken = {
+    username: testUser.username,
+    id: testUser._id,
+  };
+
+  token = jwt.sign(userForToken, process.env.SECRET);
+
   let blogObject = new Blog(helper.listWithMoreThanOneBlog[0]);
+  blogObject.user = testUser.id;
   await blogObject.save();
+  testUser.blogs = testUser.blogs.concat(blogObject._id);
 
   blogObject = new Blog(helper.listWithMoreThanOneBlog[1]);
+  blogObject.user = testUser.id;
   await blogObject.save();
+  testUser.blogs = testUser.blogs.concat(blogObject._id);
+
+  await testUser.save();
 });
 
 test("there are two blogs", async () => {
@@ -44,6 +61,7 @@ test("a valid blog can be added ", async () => {
 
   await api
     .post("/api/blogs")
+    .set("Authorization", `Bearer ${process.env.TOKEN}`)
     .send(newBlog)
     .expect(201)
     .expect("Content-Type", /application\/json/);
@@ -57,6 +75,27 @@ test("a valid blog can be added ", async () => {
   );
 });
 
+test("adding a blog will fail with 401 if the token is not provided", async () => {
+  const blogsAtStart = await helper.blogsInDb();
+
+  const newBlog = {
+    title: "Premature refactoring is the root of many bad things",
+    author: "Nicolas Carlo",
+    url: "https://understandlegacycode.com/blog/refactoring-rule-of-three/#:~:text=Premature%20refactoring%20is%20the%20root,You're%20onto%20something",
+    likes: 5,
+  };
+
+  await api.post("/api/blogs").send(newBlog).expect(401);
+
+  const blogsAtEnd = await helper.blogsInDb();
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length);
+
+  const titles = blogsAtEnd.map((n) => n.title);
+  assert(
+    !titles.includes("Premature refactoring is the root of many bad things"),
+  );
+});
+
 test("if the likes property is missing it will default to zero", async () => {
   const newBlogWithoutLikes = {
     title: "Math for game developers",
@@ -66,6 +105,7 @@ test("if the likes property is missing it will default to zero", async () => {
 
   const response = await api
     .post("/api/blogs")
+    .set("Authorization", `Bearer ${token}`)
     .send(newBlogWithoutLikes)
     .expect(201)
     .expect("Content-Type", /application\/json/);
@@ -82,6 +122,7 @@ test("if the title or url properties are missing the server will respond with 40
 
   let response = await api
     .post("/api/blogs")
+    .set("Authorization", `Bearer ${token}`)
     .send(newBlogWithoutTitle)
     .expect(400);
 
@@ -95,7 +136,11 @@ test("if the title or url properties are missing the server will respond with 40
     likes: 0,
   };
 
-  response = await api.post("/api/blogs").send(newBlogWithoutURL).expect(400);
+  response = await api
+    .post("/api/blogs")
+    .set("Authorization", `Bearer ${token}`)
+    .send(newBlogWithoutURL)
+    .expect(400);
 
   totalBlogs = await helper.blogsInDb();
   assert.strictEqual(totalBlogs.length, 2);
@@ -107,6 +152,7 @@ test("if the title or url properties are missing the server will respond with 40
 
   response = await api
     .post("/api/blogs")
+    .set("Authorization", `Bearer ${token}`)
     .send(newBlogWithoutURLAndTitle)
     .expect(400);
 
@@ -117,9 +163,12 @@ test("if the title or url properties are missing the server will respond with 40
 describe("deletion of a blog", () => {
   test("succeeds with status code 204 if id is valid", async () => {
     const blogsAtStart = await helper.blogsInDb();
-    const blogToDelete = blogsAtStart[0];
+    const blogToDelete = blogsAtStart[1];
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(204);
 
     const blogsAtEnd = await helper.blogsInDb();
 
@@ -134,7 +183,10 @@ describe("deletion of a blog", () => {
     const blogsAtStart = await helper.blogsInDb();
     const blogDoesntExist = new Blog(helper.listWithMoreThanOneBlog[3]);
 
-    await api.delete(`/api/blogs/${blogDoesntExist.id}`).expect(404);
+    await api
+      .delete(`/api/blogs/${blogDoesntExist.id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .expect(404);
 
     const blogsAtEnd = await helper.blogsInDb();
 
@@ -153,6 +205,7 @@ describe("updating a blog", () => {
 
     const response = await api
       .put(`/api/blogs/${blogToUpdate.id}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({ likes: 200 })
       .expect(200);
 

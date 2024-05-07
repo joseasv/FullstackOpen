@@ -41,6 +41,7 @@ const errorHandler = (error, request, response, next) => {
 
 const tokenExtractor = (request, response, next) => {
   const authorization = request.get("authorization");
+  //console.log("tokenExtractor", authorization);
   if (authorization && authorization.startsWith("Bearer ")) {
     request.token = authorization.replace("Bearer ", "");
   }
@@ -49,11 +50,15 @@ const tokenExtractor = (request, response, next) => {
 };
 
 const userExtractor = async (request, response, next) => {
+  //console.log("userExtractor token", request.token);
   const decodedToken = jwt.verify(request.token, process.env.SECRET);
   if (!decodedToken.id) {
     return response.status(401).json({ error: "token invalid" });
   }
+  //console.log("userExtractor decodedToken", decodedToken);
+  //console.log("userExtractor decodedToken.id", decodedToken.id);
   const user = await User.findById(decodedToken.id);
+  //console.log("logged in user", user);
   if (user) {
     request.user = user;
   }
