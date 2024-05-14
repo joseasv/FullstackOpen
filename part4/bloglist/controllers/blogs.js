@@ -29,7 +29,14 @@ blogsRouter.post("/", middleware.userExtractor, async (request, response) => {
     user: user.id,
   });
 
-  if (request.body.title === undefined || request.body.url === undefined) {
+  console.log("blog data to be added", blog);
+
+  if (
+    request.body.title === undefined ||
+    request.body.url === undefined ||
+    request.body.title.length === 0 ||
+    request.body.url.length === 0
+  ) {
     response
       .status(400)
       .json({

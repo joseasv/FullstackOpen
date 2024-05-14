@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import Blog from "./components/Blog";
 import AddBlogForm from "./components/AddBlogForm";
+import Notification from "./components/Notification";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
+import "./index.css";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
@@ -12,6 +14,20 @@ const App = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
   const [newURL, setNewURL] = useState("");
+  const [newMessageData, setMessageData] = useState({
+    message: null,
+    isAlert: false,
+  });
+
+  const showTempNotification = (message, isAlert) => {
+    setMessageData({ message, isAlert });
+    setTimeout(() => {
+      setMessageData({
+        message: null,
+        isAlert: false,
+      });
+    }, 4000);
+  };
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -28,14 +44,16 @@ const App = () => {
       );
 
       blogService.setToken(user.token);
-      console.log(user);
+      //console.log(user);
+      showTempNotification(`Succesfully logged in.`, false);
       setUser(user);
       setUsername("");
       setPassword("");
     } catch (exception) {
-      setErrorMessage("Wrong credentials");
+      //setErrorMessage("Wrong credentials");
+      showTempNotification(`Wrong username or password`, true);
       setTimeout(() => {
-        setErrorMessage(null);
+        //setErrorMessage(null);
       }, 5000);
     }
   };
@@ -62,12 +80,21 @@ const App = () => {
       url: newURL,
     };
 
-    const returnedBlog = await blogService.create(newBlog);
-    console.log(returnedBlog, " was added");
-    setBlogs(blogs.concat(returnedBlog));
-    setNewTitle("");
-    setNewAuthor("");
-    setNewURL("");
+    try {
+      const returnedBlog = await blogService.create(newBlog);
+      //console.log(returnedBlog, " was added");
+      showTempNotification(
+        `a new blog ${returnedBlog.title} by ${returnedBlog.author} was added`,
+        false,
+      );
+      setBlogs(blogs.concat(returnedBlog));
+      setNewTitle("");
+      setNewAuthor("");
+      setNewURL("");
+    } catch (exception) {
+      console.log(exception.response.data);
+      showTempNotification(exception.response.data.error, true);
+    }
   };
 
   const handleTitleChange = (event) => {
@@ -86,6 +113,10 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
+        <Notification
+          message={newMessageData.message}
+          isAlert={newMessageData.isAlert}
+        />
         <form onSubmit={handleLogin}>
           <div>
             username
@@ -114,6 +145,10 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
+      <Notification
+        message={newMessageData.message}
+        isAlert={newMessageData.isAlert}
+      />
       <p>
         {user.name} logged-in{" "}
         <button
