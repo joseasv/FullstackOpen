@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
 import AddBlogForm from "./components/AddBlogForm";
 import Notification from "./components/Notification";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
+import Togglable from "./components/Toggable";
 import "./index.css";
 
 const App = () => {
@@ -11,9 +12,6 @@ const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [newTitle, setNewTitle] = useState("");
-  const [newAuthor, setNewAuthor] = useState("");
-  const [newURL, setNewURL] = useState("");
   const [newMessageData, setMessageData] = useState({
     message: null,
     isAlert: false,
@@ -71,42 +69,23 @@ const App = () => {
     }
   }, []);
 
-  const addBlog = async (event) => {
-    event.preventDefault();
+  const blogFormRef = useRef();
 
-    const newBlog = {
-      title: newTitle,
-      author: newAuthor,
-      url: newURL,
-    };
+  const addBlog = async (blogObject) => {
+    blogFormRef.current.toggleVisibility();
 
     try {
-      const returnedBlog = await blogService.create(newBlog);
+      const returnedBlog = await blogService.create(blogObject);
       //console.log(returnedBlog, " was added");
       showTempNotification(
         `a new blog ${returnedBlog.title} by ${returnedBlog.author} was added`,
         false,
       );
       setBlogs(blogs.concat(returnedBlog));
-      setNewTitle("");
-      setNewAuthor("");
-      setNewURL("");
     } catch (exception) {
       console.log(exception.response.data);
       showTempNotification(exception.response.data.error, true);
     }
-  };
-
-  const handleTitleChange = (event) => {
-    setNewTitle(event.target.value);
-  };
-
-  const handleAuthorChange = (event) => {
-    setNewAuthor(event.target.value);
-  };
-
-  const handleURLChange = (event) => {
-    setNewURL(event.target.value);
   };
 
   if (user === null) {
@@ -162,16 +141,10 @@ const App = () => {
         </button>
       </p>
 
-      <h2>create new</h2>
-      <AddBlogForm
-        onSubmitHandler={addBlog}
-        newData={{ title: newTitle, author: newAuthor, url: newURL }}
-        onChangeHandlers={{
-          titleHandler: handleTitleChange,
-          authorHandler: handleAuthorChange,
-          urlHandler: handleURLChange,
-        }}
-      />
+      <Togglable buttonLabel="new blog" ref={blogFormRef}>
+        <h2>create new</h2>
+        <AddBlogForm createBlog={addBlog} />
+      </Togglable>
       {blogs.map((blog) => (
         <Blog key={blog.id} blog={blog} />
       ))}
