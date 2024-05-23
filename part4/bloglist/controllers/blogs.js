@@ -71,12 +71,19 @@ blogsRouter.delete(
   },
 );
 
-blogsRouter.put("/:id", async (request, response) => {
+blogsRouter.put("/:id", middleware.userExtractor, async (request, response) => {
+  const user = request.user;
   const newLikes = request.body.likes;
 
   const updatedBlog = await Blog.findByIdAndUpdate(
     request.params.id,
-    { likes: newLikes },
+    {
+      likes: newLikes,
+      title: request.body.title,
+      author: request.body.author,
+      url: request.body.url,
+      user: user,
+    },
     { new: true },
   );
 
