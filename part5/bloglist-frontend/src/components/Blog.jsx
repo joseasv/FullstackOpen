@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import blogService from "../services/blogs";
 import { useState, useEffect } from "react";
 
@@ -49,6 +50,12 @@ const Blog = ({ blog, user, removeCallback }) => {
       </div>
     </div>
   );
+};
+
+Blog.propTypes = {
+  blog: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
+  removeCallback: PropTypes.func.isRequired,
 };
 
 export default Blog;
