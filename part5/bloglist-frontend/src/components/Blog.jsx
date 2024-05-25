@@ -1,7 +1,7 @@
 import blogService from "../services/blogs";
 import { useState, useEffect } from "react";
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, user, removeCallback }) => {
   const [visible, setVisible] = useState(false);
   const [blogData, setBlogData] = useState(null);
 
@@ -43,6 +43,9 @@ const Blog = ({ blog }) => {
           likes {blog.likes} <button onClick={addLike}>like</button>
         </div>
         <div>{blog.user && blog.user.name}</div>
+        {blog.user.username === user.username && (
+          <button onClick={() => removeCallback(blog)}>remove</button>
+        )}
       </div>
     </div>
   );
