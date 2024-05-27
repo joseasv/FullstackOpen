@@ -1,14 +1,8 @@
 import PropTypes from "prop-types";
-import blogService from "../services/blogs";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-const Blog = ({ blog, user, removeCallback }) => {
+const Blog = ({ blog, user, removeCallback, addLikeCallback }) => {
   const [visible, setVisible] = useState(false);
-  const [blogData, setBlogData] = useState(null);
-
-  useEffect(() => {
-    setBlogData(blog);
-  });
 
   const blogStyle = {
     paddingTop: 10,
@@ -18,18 +12,12 @@ const Blog = ({ blog, user, removeCallback }) => {
     marginBottom: 5,
   };
 
-  const showWhenVisible = { display: visible ? "" : "none" };
+  const showWhenVisible = { display: visible ? "block" : "none" };
 
-  const addLike = async () => {
-    blogData.likes++;
-    const returnedBlog = await blogService.likeBlog(blogData);
-    setBlogData(returnedBlog);
-  };
-
-  //console.log(blog);
+  //   console.log(blog);
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className="visibleBlogData">
       {blog.title} {blog.author}
       <button
         onClick={() => {
@@ -38,10 +26,11 @@ const Blog = ({ blog, user, removeCallback }) => {
       >
         {visible ? "hide" : "view"}
       </button>
-      <div style={showWhenVisible}>
+      <div style={showWhenVisible} className="notVisibleBlogData">
         <div>{blog.url} </div>
         <div>
-          likes {blog.likes} <button onClick={addLike}>like</button>
+          likes {blog.likes}{" "}
+          <button onClick={() => addLikeCallback(blog)}>like</button>
         </div>
         <div>{blog.user && blog.user.name}</div>
         {blog.user.username === user.username && (

@@ -95,6 +95,26 @@ const App = () => {
     }
   };
 
+  const addLike = async (blogData) => {
+    blogData.likes++;
+    const returnedBlog = await blogService.likeBlog(blogData);
+    setBlogs(
+      blogs.map((blog) => {
+        if (blog.id === returnedBlog.id) {
+          returnedBlog.user = blogData.user;
+          return returnedBlog;
+        }
+
+        return blog;
+      }),
+    );
+  };
+
+  const showDetails = (visible) => {
+    console.log("showDetails", visible);
+    return !visible;
+  };
+
   if (user === null) {
     return (
       <div>
@@ -157,6 +177,7 @@ const App = () => {
           key={blog.id}
           blog={blog}
           user={user}
+          addLikeCallback={addLike}
           removeCallback={removeBlog}
         />
       ))}
