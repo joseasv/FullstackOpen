@@ -14,7 +14,7 @@ const Blog = ({ blog, user, removeCallback, addLikeCallback }) => {
 
   const showWhenVisible = { display: visible ? "block" : "none" };
 
-  //   console.log(blog);
+  console.log(user.username, blog.user.username);
 
   return (
     <div style={blogStyle} className="visibleBlogData">

@@ -5,6 +5,7 @@ const User = require("../models/user");
 
 blogsRouter.get("/", async (request, response) => {
   const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
+  //console.log(blogs);
   response.json(blogs);
 });
 
@@ -26,7 +27,7 @@ blogsRouter.post("/", middleware.userExtractor, async (request, response) => {
     author: body.author,
     url: body.url,
     likes: body.id === undefined ? 0 : body.id,
-    user: user.id,
+    user: user,
   });
 
   console.log("blog data to be added", blog);

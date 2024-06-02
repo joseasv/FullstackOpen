@@ -57,7 +57,10 @@ const App = () => {
   };
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
+    blogService.getAll().then((blogs) => {
+      //console.log("blogs App.jsx useEffect ", ...blogs);
+      setBlogs(blogs);
+    });
   }, []);
 
   useEffect(() => {
@@ -81,6 +84,7 @@ const App = () => {
         `a new blog ${returnedBlog.title} by ${returnedBlog.author} was added`,
         false,
       );
+      returnedBlog.user = user;
       setBlogs(blogs.concat(returnedBlog));
     } catch (exception) {
       console.log(exception.response.data);
@@ -130,6 +134,7 @@ const App = () => {
               type="text"
               value={username}
               name="Username"
+              data-testid="username"
               onChange={({ target }) => setUsername(target.value)}
             />
           </div>
@@ -139,6 +144,7 @@ const App = () => {
               type="password"
               value={password}
               name="Password"
+              data-testid="password"
               onChange={({ target }) => setPassword(target.value)}
             />
           </div>
