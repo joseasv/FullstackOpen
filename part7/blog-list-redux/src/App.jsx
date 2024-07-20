@@ -6,6 +6,7 @@ import blogService from "./services/blogs";
 import loginService from "./services/login";
 import Togglable from "./components/Toggable";
 import { setNotification } from "./reducers/notificationReducer";
+import { createBlog } from "./reducers/blogReducer";
 import { useDispatch } from "react-redux";
 import "./index.css";
 
@@ -14,10 +15,6 @@ const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [newMessageData, setMessageData] = useState({
-    message: null,
-    isAlert: false,
-  });
 
   const dispatch = useDispatch();
 
@@ -94,6 +91,7 @@ const App = () => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
       await blogService.deleteBlog(blog);
       setBlogs(blogs.filter((fBlog) => fBlog.id !== blog.id));
+      dispatch(setNotification(`Removed blog ${blog.title} `, 5, false));
     }
   };
 
@@ -112,19 +110,11 @@ const App = () => {
     );
   };
 
-  const showDetails = (visible) => {
-    console.log("showDetails", visible);
-    return !visible;
-  };
-
   if (user === null) {
     return (
       <div>
         <h2>Log in to application</h2>
-        <Notification
-          message={newMessageData.message}
-          isAlert={newMessageData.isAlert}
-        />
+        <Notification />
         <form onSubmit={handleLogin}>
           <div>
             username
@@ -155,10 +145,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      <Notification
-        message={newMessageData.message}
-        isAlert={newMessageData.isAlert}
-      />
+      <Notification />
       <p>
         {user.name} logged-in{" "}
         <button
