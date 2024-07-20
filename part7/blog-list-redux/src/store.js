@@ -6,7 +6,7 @@ const store = configureStore({
   reducer: {
     /*anecdotes: anecdoteReducer,
     filter: filterReducer,*/
-    blog: blogReducer,
+    blogs: blogReducer,
     notification: notificationReducer,
   },
 });

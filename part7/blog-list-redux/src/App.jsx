@@ -7,7 +7,9 @@ import loginService from "./services/login";
 import Togglable from "./components/Toggable";
 import { setNotification } from "./reducers/notificationReducer";
 import { createBlog } from "./reducers/blogReducer";
+import { initializeBlogs } from "./reducers/blogReducer";
 import { useDispatch } from "react-redux";
+import BlogList from "./components/BlogList";
 import "./index.css";
 
 const App = () => {
@@ -48,10 +50,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => {
-      //console.log("blogs App.jsx useEffect ", ...blogs);
-      setBlogs(blogs);
-    });
+    dispatch(initializeBlogs());
   }, []);
 
   useEffect(() => {
@@ -65,26 +64,8 @@ const App = () => {
 
   const blogFormRef = useRef();
 
-  const addBlog = async (blogObject) => {
+  const toggleCallback = () => {
     blogFormRef.current.toggleVisibility();
-
-    try {
-      const returnedBlog = await blogService.create(blogObject);
-      //console.log(returnedBlog, " was added");
-
-      dispatch(
-        setNotification(
-          `a new blog ${returnedBlog.title} by ${returnedBlog.author} was added`,
-          5,
-          false,
-        ),
-      );
-      returnedBlog.user = user;
-      setBlogs(blogs.concat(returnedBlog));
-    } catch (exception) {
-      console.log(exception.response.data);
-      dispatch(setNotification(exception.response.data.error, 5, true));
-    }
   };
 
   const removeBlog = async (blog) => {
@@ -161,17 +142,9 @@ const App = () => {
 
       <Togglable buttonLabel="new blog" ref={blogFormRef}>
         <h2>create new</h2>
-        <AddBlogForm createBlog={addBlog} />
+        <AddBlogForm user={user} toggleCallback={toggleCallback} />
       </Togglable>
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          user={user}
-          addLikeCallback={addLike}
-          removeCallback={removeBlog}
-        />
-      ))}
+      <BlogList user={user} />
     </div>
   );
 };

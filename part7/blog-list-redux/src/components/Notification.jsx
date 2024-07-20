@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 const Notification = () => {
   const notification = useSelector(({ notification }) => notification);
 
-  console.log("notification", notification);
+  //console.log("notification", notification);
 
   if (notification.message !== "") {
     if (notification.isAlert === true) {

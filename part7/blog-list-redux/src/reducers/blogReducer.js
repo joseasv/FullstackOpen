@@ -1,11 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import blogService from "../services/blogs";
 
-const initialState = [];
-
 const blogSlice = createSlice({
-  name: "blog",
-  initialState,
+  name: "blogs",
+  initialState: [],
   reducers: {
     addBlog(state, action) {
       console.log("reducer addBlog state", state, "action", action);
@@ -14,6 +12,8 @@ const blogSlice = createSlice({
         title: action.payload.title,
         author: action.payload.author,
         url: action.payload.url,
+        user: action.payload.user,
+        id: action.payload.id,
       };
 
       state.push(newBlogInfo);
@@ -24,11 +24,11 @@ const blogSlice = createSlice({
   },
 });
 
-export const { addBlog } = blogSlice.actions;
+export const { addBlog, setBlogs } = blogSlice.actions;
 
-export const createBlog = (title, author, url) => {
+export const createBlog = (blogObject) => {
   return async (dispatch) => {
-    const newBlogObject = { title, author, url };
+    const newBlogObject = blogObject;
     const newBlog = await blogService.create(newBlogObject);
     dispatch(addBlog(newBlog));
   };
