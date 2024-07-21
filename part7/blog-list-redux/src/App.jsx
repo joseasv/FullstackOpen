@@ -13,7 +13,6 @@ import BlogList from "./components/BlogList";
 import "./index.css";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
