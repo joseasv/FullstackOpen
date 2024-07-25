@@ -51,11 +51,17 @@ const blogSlice = createSlice({
 export const { addBlog, setBlogs, addLikeTo, replaceBlog, removeBlog } =
   blogSlice.actions;
 
-export const createBlog = (blogObject) => {
+export const createBlog = (blogObject, onSuccess, onFailure) => {
   return async (dispatch) => {
     const newBlogObject = blogObject;
-    const newBlog = await blogService.create(newBlogObject);
-    dispatch(addBlog(newBlog));
+    try {
+      const newBlog = await blogService.create(newBlogObject);
+
+      onSuccess();
+      dispatch(addBlog(newBlog));
+    } catch (exception) {
+      onFailure(exception);
+    }
   };
 };
 

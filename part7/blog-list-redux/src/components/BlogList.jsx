@@ -4,8 +4,11 @@ import { setNotification } from "../reducers/notificationReducer";
 import { addLike } from "../reducers/blogReducer";
 import { deleteBlog } from "../reducers/blogReducer";
 
-const BlogList = ({ user }) => {
+const BlogList = () => {
   const dispatch = useDispatch();
+  const user = useSelector(({ user }) => user);
+
+  console.log("user ", user);
 
   const blogs = useSelector(({ blogs }) => {
     console.log("BlogList");
