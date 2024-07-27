@@ -20,6 +20,8 @@ export const NotificationContextProvider = (props) => {
     timeoutId: undefined,
   });
 
+  console.log("NotificationContextProvider props ", props);
+
   return (
     <NotificationContext.Provider value={[notification, notificationDispatch]}>
       {props.children}
