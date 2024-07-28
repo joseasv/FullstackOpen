@@ -7,10 +7,21 @@ import loginService from "./services/login";
 import Togglable from "./components/Toggable";
 import { useContext } from "react";
 import NotificationContext from "./NotificationContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import "./index.css";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
+  const result = useQuery({
+    queryKey: ["blogs"],
+    queryFn: blogService.getAll,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  console.log(JSON.parse(JSON.stringify(result)));
+
+  let blogs = [];
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
@@ -59,13 +70,6 @@ const App = () => {
   };
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => {
-      //console.log("blogs App.jsx useEffect ", ...blogs);
-      setBlogs(blogs);
-    });
-  }, []);
-
-  useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedbloglistappUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
@@ -75,36 +79,6 @@ const App = () => {
   }, []);
 
   const blogFormRef = useRef();
-
-  const addBlog = async (blogObject) => {
-    blogFormRef.current.toggleVisibility();
-
-    try {
-      const returnedBlog = await blogService.create(blogObject);
-      //console.log(returnedBlog, " was added");
-
-      notificationDispatch({
-        type: "setMessage",
-        payload: {
-          message: `a new blog ${returnedBlog.title} by ${returnedBlog.author} was added`,
-          seconds: 5,
-          isAlert: false,
-        },
-      });
-      returnedBlog.user = user;
-      setBlogs(blogs.concat(returnedBlog));
-    } catch (exception) {
-      console.log(exception.response.data);
-      notificationDispatch({
-        type: "setMessage",
-        payload: {
-          message: exception.response.data.error,
-          seconds: 5,
-          isAlert: true,
-        },
-      });
-    }
-  };
 
   const removeBlog = async (blog) => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
@@ -124,7 +98,7 @@ const App = () => {
   const addLike = async (blogData) => {
     blogData.likes++;
     const returnedBlog = await blogService.likeBlog(blogData);
-    setBlogs(
+    /*setBlogs(
       blogs.map((blog) => {
         if (blog.id === returnedBlog.id) {
           returnedBlog.user = blogData.user;
@@ -133,8 +107,23 @@ const App = () => {
 
         return blog;
       }),
-    );
+    );*/
   };
+
+  if (result.isLoading) {
+    console.log("Query isLoading");
+    return <div>loading data...</div>;
+  }
+
+  if (result.isError) {
+    console.log("Query isError");
+    return <div>errors on the MongoDB backend</div>;
+  }
+
+  if (result.isSuccess) {
+    console.log("Query isSuccess");
+    blogs = result.data;
+  }
 
   if (user === null) {
     return (
@@ -168,6 +157,8 @@ const App = () => {
     );
   }
 
+  //const blogs = [];
+
   return (
     <div>
       <h2>blogs</h2>
@@ -187,7 +178,7 @@ const App = () => {
 
       <Togglable buttonLabel="new blog" ref={blogFormRef}>
         <h2>create new</h2>
-        <AddBlogForm createBlog={addBlog} />
+        <AddBlogForm togglableRef={blogFormRef} />
       </Togglable>
       {blogs.map((blog) => (
         <Blog
