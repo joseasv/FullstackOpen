@@ -7,10 +7,17 @@ import loginService from "./services/login";
 import Togglable from "./components/Toggable";
 import { useContext } from "react";
 import NotificationContext from "./NotificationContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+} from "@tanstack/react-query";
 import "./index.css";
 
 const App = () => {
+  const queryClient = useQueryClient();
+
   const result = useQuery({
     queryKey: ["blogs"],
     queryFn: blogService.getAll,
@@ -80,34 +87,51 @@ const App = () => {
 
   const blogFormRef = useRef();
 
-  const removeBlog = async (blog) => {
+  const removeBlogMutation = useMutation({
+    mutationFn: blogService.deleteBlog,
+    onSuccess: (deletedBlog) => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+  });
+
+  const handleRemove = (blog) => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      await blogService.deleteBlog(blog);
+      removeBlogMutation.mutate(blog);
       notificationDispatch({
         type: "setMessage",
         payload: {
-          message: `removed ${blog.title} by ${blog.author} was removed`,
+          message: `removed blog ${blog.title}`,
           seconds: 5,
-          isAlert: false,
+          isAlert: true,
         },
       });
-      setBlogs(blogs.filter((fBlog) => fBlog.id !== blog.id));
     }
   };
 
-  const addLike = async (blogData) => {
-    blogData.likes++;
-    const returnedBlog = await blogService.likeBlog(blogData);
-    /*setBlogs(
-      blogs.map((blog) => {
-        if (blog.id === returnedBlog.id) {
-          returnedBlog.user = blogData.user;
-          return returnedBlog;
-        }
+  const likeBlogMutation = useMutation({
+    mutationFn: blogService.likeBlog,
+    onSuccess: (likedBlog) => {
+      const blogs = queryClient.getQueryData(["blogs"]);
+      queryClient.setQueryData(
+        ["blogs"],
+        blogs.map((blog) => {
+          console.log(blog);
+          return blog.id === likedBlog.id ? likedBlog : blog;
+        }),
+      );
+    },
+  });
 
-        return blog;
-      }),
-    );*/
+  const handleLike = (blog) => {
+    likeBlogMutation.mutate({ ...blog, likes: blog.likes + 1 });
+    notificationDispatch({
+      type: "setMessage",
+      payload: {
+        message: `liked blog ${blog.title}`,
+        seconds: 5,
+        isAlert: false,
+      },
+    });
   };
 
   if (result.isLoading) {
@@ -185,8 +209,8 @@ const App = () => {
           key={blog.id}
           blog={blog}
           user={user}
-          addLikeCallback={addLike}
-          removeCallback={removeBlog}
+          addLikeCallback={handleLike}
+          removeCallback={handleRemove}
         />
       ))}
     </div>
