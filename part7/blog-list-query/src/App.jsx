@@ -7,12 +7,8 @@ import loginService from "./services/login";
 import Togglable from "./components/Toggable";
 import { useContext } from "react";
 import NotificationContext from "./NotificationContext";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-} from "@tanstack/react-query";
+import UserContext from "./UserContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import "./index.css";
 
 const App = () => {
@@ -31,9 +27,11 @@ const App = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
 
   const [notification, notificationDispatch] = useContext(NotificationContext);
+  const [userData, userDispatch] = useContext(UserContext);
+
+  console.log("user from UserContext ", userData);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -44,13 +42,12 @@ const App = () => {
         password,
       });
 
-      window.localStorage.setItem(
-        "loggedbloglistappUser",
-        JSON.stringify(user),
-      );
-
-      blogService.setToken(user.token);
-      //console.log(user);
+      userDispatch({
+        type: "LOGIN_USER",
+        payload: {
+          user,
+        },
+      });
       notificationDispatch({
         type: "setMessage",
         payload: {
@@ -59,7 +56,6 @@ const App = () => {
           isAlert: false,
         },
       });
-      setUser(user);
       setUsername("");
       setPassword("");
     } catch (exception) {
@@ -77,12 +73,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem("loggedbloglistappUser");
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
-    }
+    userDispatch({ type: "LOGIN_USER_FROM_LOCAL_STORAGE" });
   }, []);
 
   const blogFormRef = useRef();
@@ -149,7 +140,7 @@ const App = () => {
     blogs = result.data;
   }
 
-  if (user === null) {
+  if (userData.user === null) {
     return (
       <div>
         <h2>Log in to application</h2>
@@ -188,12 +179,10 @@ const App = () => {
       <h2>blogs</h2>
       <Notification />
       <p>
-        {user.name} logged-in{" "}
+        {userData.user.name} logged-in{" "}
         <button
           onClick={() => {
-            window.localStorage.clear();
-            setUser(null);
-            blogService.setToken(null);
+            userDispatch({ type: "LOGOUT_USER" });
           }}
         >
           logout{" "}
@@ -208,7 +197,7 @@ const App = () => {
         <Blog
           key={blog.id}
           blog={blog}
-          user={user}
+          user={userData.user}
           addLikeCallback={handleLike}
           removeCallback={handleRemove}
         />

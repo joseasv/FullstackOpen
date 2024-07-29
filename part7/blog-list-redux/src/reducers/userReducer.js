@@ -15,13 +15,10 @@ const userSlice = createSlice({
       state = null;
       return null;
     },
-    getUser(state, action) {
-      return state;
-    },
   },
 });
 
-export const { addUser, removeUser, getUser } = userSlice.actions;
+export const { addUser, removeUser } = userSlice.actions;
 
 export const loginUser = (username, password, onSuccess, onFailure) => {
   return async (dispatch) => {
@@ -32,6 +29,7 @@ export const loginUser = (username, password, onSuccess, onFailure) => {
         "loggedbloglistappUser",
         JSON.stringify(user),
       );
+      onSuccess();
       dispatch(addUser(user));
     } catch (exception) {
       onFailure(exception);

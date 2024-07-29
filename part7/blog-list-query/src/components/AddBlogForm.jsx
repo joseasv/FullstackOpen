@@ -46,6 +46,10 @@ const AddBlogForm = ({ togglableRef }) => {
     const url = event.target.url.value;
 
     newBlogMutation.mutate({ title, author, url });
+
+    event.target.title.value = "";
+    event.target.author.value = "";
+    event.target.url.value = "";
   };
 
   return (
