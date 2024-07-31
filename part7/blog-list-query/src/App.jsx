@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from "react";
-import AddBlogForm from "./components/AddBlogForm";
+
 import Notification from "./components/Notification";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
-import Togglable from "./components/Toggable";
+import usersService from "./services/users";
 import { useContext } from "react";
 import NotificationContext from "./NotificationContext";
 import UserContext from "./UserContext";
 import { useQuery } from "@tanstack/react-query";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { useMatch, Routes, Route, Link } from "react-router-dom";
 import "./index.css";
 import HomeRoute from "./components/HomeRoute";
 import UsersRoute from "./components/UsersRoute";
+import UserRoute from "./components/UserRoute";
 
 const App = () => {
   const result = useQuery({
@@ -24,6 +25,17 @@ const App = () => {
   console.log(JSON.parse(JSON.stringify(result)));
 
   let blogs = [];
+
+  const usersResult = useQuery({
+    queryKey: ["users"],
+    queryFn: usersService.getAll,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  console.log(JSON.parse(JSON.stringify(usersResult)));
+
+  let users = [];
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -76,6 +88,9 @@ const App = () => {
     userDispatch({ type: "LOGIN_USER_FROM_LOCAL_STORAGE" });
   }, []);
 
+  const match = useMatch("/users/:id");
+  let user = undefined;
+
   if (result.isLoading) {
     console.log("Query isLoading");
     return <div>loading data...</div>;
@@ -89,6 +104,32 @@ const App = () => {
   if (result.isSuccess) {
     console.log("Query isSuccess");
     blogs = result.data;
+  }
+
+  if (usersResult.isLoading) {
+    console.log("Query isLoading");
+    return <div>loading data...</div>;
+  }
+
+  if (usersResult.isError) {
+    console.log("Query isError");
+    return <div>errors on the MongoDB backend</div>;
+  }
+
+  if (usersResult.isSuccess) {
+    console.log("Query isSuccess");
+    users = usersResult.data;
+
+    user = match
+      ? users.find((user) => {
+          console.log("checking user", user);
+          return user.id === match.params.id;
+        })
+      : null;
+
+    console.log("isSuccess users", users);
+    console.log("match ", match);
+    console.log("matched user ", user);
   }
 
   if (userData.user === null) {
@@ -123,14 +164,12 @@ const App = () => {
     );
   }
 
-  //const blogs = [];
-
   const padding = {
     padding: 5,
   };
 
   return (
-    <Router>
+    <div>
       <div>
         <Link style={padding} to="/">
           home
@@ -155,11 +194,12 @@ const App = () => {
         </p>
 
         <Routes>
-          <Route path="/users" element={<UsersRoute />} />
+          <Route path="/users" element={<UsersRoute users={users} />} />
           <Route path="/" element={<HomeRoute blogs={blogs} />} />
+          <Route path="/users/:id" element={<UserRoute user={user} />} />
         </Routes>
       </div>
-    </Router>
+    </div>
   );
 };
 
