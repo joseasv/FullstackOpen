@@ -52,4 +52,9 @@ export const UserContextProvider = (props) => {
   );
 };
 
+export const useUserState = () => {
+  const userAndDispatch = useContext(UserContext);
+  return userAndDispatch[0];
+};
+
 export default UserContext;

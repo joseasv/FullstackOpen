@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import Blog from "./components/Blog";
 import AddBlogForm from "./components/AddBlogForm";
 import Notification from "./components/Notification";
 import blogService from "./services/blogs";
@@ -8,12 +7,13 @@ import Togglable from "./components/Toggable";
 import { useContext } from "react";
 import NotificationContext from "./NotificationContext";
 import UserContext from "./UserContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./index.css";
+import HomeRoute from "./components/HomeRoute";
+import UsersRoute from "./components/UsersRoute";
 
 const App = () => {
-  const queryClient = useQueryClient();
-
   const result = useQuery({
     queryKey: ["blogs"],
     queryFn: blogService.getAll,
@@ -76,55 +76,6 @@ const App = () => {
     userDispatch({ type: "LOGIN_USER_FROM_LOCAL_STORAGE" });
   }, []);
 
-  const blogFormRef = useRef();
-
-  const removeBlogMutation = useMutation({
-    mutationFn: blogService.deleteBlog,
-    onSuccess: (deletedBlog) => {
-      queryClient.invalidateQueries({ queryKey: ["blogs"] });
-    },
-  });
-
-  const handleRemove = (blog) => {
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      removeBlogMutation.mutate(blog);
-      notificationDispatch({
-        type: "setMessage",
-        payload: {
-          message: `removed blog ${blog.title}`,
-          seconds: 5,
-          isAlert: true,
-        },
-      });
-    }
-  };
-
-  const likeBlogMutation = useMutation({
-    mutationFn: blogService.likeBlog,
-    onSuccess: (likedBlog) => {
-      const blogs = queryClient.getQueryData(["blogs"]);
-      queryClient.setQueryData(
-        ["blogs"],
-        blogs.map((blog) => {
-          console.log(blog);
-          return blog.id === likedBlog.id ? likedBlog : blog;
-        }),
-      );
-    },
-  });
-
-  const handleLike = (blog) => {
-    likeBlogMutation.mutate({ ...blog, likes: blog.likes + 1 });
-    notificationDispatch({
-      type: "setMessage",
-      payload: {
-        message: `liked blog ${blog.title}`,
-        seconds: 5,
-        isAlert: false,
-      },
-    });
-  };
-
   if (result.isLoading) {
     console.log("Query isLoading");
     return <div>loading data...</div>;
@@ -174,35 +125,41 @@ const App = () => {
 
   //const blogs = [];
 
-  return (
-    <div>
-      <h2>blogs</h2>
-      <Notification />
-      <p>
-        {userData.user.name} logged-in{" "}
-        <button
-          onClick={() => {
-            userDispatch({ type: "LOGOUT_USER" });
-          }}
-        >
-          logout{" "}
-        </button>
-      </p>
+  const padding = {
+    padding: 5,
+  };
 
-      <Togglable buttonLabel="new blog" ref={blogFormRef}>
-        <h2>create new</h2>
-        <AddBlogForm togglableRef={blogFormRef} />
-      </Togglable>
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          user={userData.user}
-          addLikeCallback={handleLike}
-          removeCallback={handleRemove}
-        />
-      ))}
-    </div>
+  return (
+    <Router>
+      <div>
+        <Link style={padding} to="/">
+          home
+        </Link>
+        <Link style={padding} to="/users">
+          users
+        </Link>
+      </div>
+
+      <div>
+        <h2>blogs</h2>
+        <Notification />
+        <p>
+          {userData.user.name} logged-in{" "}
+          <button
+            onClick={() => {
+              userDispatch({ type: "LOGOUT_USER" });
+            }}
+          >
+            logout{" "}
+          </button>
+        </p>
+
+        <Routes>
+          <Route path="/users" element={<UsersRoute />} />
+          <Route path="/" element={<HomeRoute blogs={blogs} />} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 
