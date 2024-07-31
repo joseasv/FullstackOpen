@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
-const Blog = ({ blog, user, removeCallback, addLikeCallback }) => {
+const Blog = ({ blog, user, removeCallback }) => {
   const [visible, setVisible] = useState(false);
 
   const blogStyle = {
@@ -18,20 +19,13 @@ const Blog = ({ blog, user, removeCallback, addLikeCallback }) => {
 
   return (
     <div style={blogStyle} className="visibleBlogData">
-      {blog.title} {blog.author}
-      <button
-        onClick={() => {
-          setVisible(!visible);
-        }}
-      >
-        {visible ? "hide" : "view"}
-      </button>
+      <Link to={`/blogs/${blog.id}`}>
+        {blog.title} {blog.author}
+      </Link>
+
       <div style={showWhenVisible} className="notVisibleBlogData">
         <div>{blog.url} </div>
-        <div>
-          likes {blog.likes}{" "}
-          <button onClick={() => addLikeCallback(blog)}>like</button>
-        </div>
+
         <div>{blog.user && blog.user.name}</div>
         {blog.user.username === user.username && (
           <button onClick={() => removeCallback(blog)}>remove</button>

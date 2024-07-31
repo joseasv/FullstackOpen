@@ -13,6 +13,7 @@ import "./index.css";
 import HomeRoute from "./components/HomeRoute";
 import UsersRoute from "./components/UsersRoute";
 import UserRoute from "./components/UserRoute";
+import BlogRoute from "./components/BlogRoute";
 
 const App = () => {
   const result = useQuery({
@@ -91,6 +92,9 @@ const App = () => {
   const match = useMatch("/users/:id");
   let user = undefined;
 
+  const blogMatch = useMatch("/blogs/:id");
+  let blog = undefined;
+
   if (result.isLoading) {
     console.log("Query isLoading");
     return <div>loading data...</div>;
@@ -104,6 +108,10 @@ const App = () => {
   if (result.isSuccess) {
     console.log("Query isSuccess");
     blogs = result.data;
+
+    blog = blogMatch
+      ? blogs.find((blog) => blog.id === blogMatch.params.id)
+      : null;
   }
 
   if (usersResult.isLoading) {
@@ -197,6 +205,7 @@ const App = () => {
           <Route path="/users" element={<UsersRoute users={users} />} />
           <Route path="/" element={<HomeRoute blogs={blogs} />} />
           <Route path="/users/:id" element={<UserRoute user={user} />} />
+          <Route path="/blogs/:id" element={<BlogRoute blog={blog} />} />
         </Routes>
       </div>
     </div>

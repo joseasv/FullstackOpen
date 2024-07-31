@@ -41,42 +41,6 @@ const BlogList = ({ blogs }) => {
     }
   };
 
-  const likeBlogMutation = useMutation({
-    mutationFn: blogService.likeBlog,
-    onSuccess: (likedBlog) => {
-      const blogs = queryClient.getQueryData(["blogs"]);
-      queryClient.setQueryData(
-        ["blogs"],
-        blogs.map((blog) => {
-          console.log(blog);
-          return blog.id === likedBlog.id ? likedBlog : blog;
-        }),
-      );
-    },
-    onError: (error) => {
-      notificationDispatch({
-        type: "setMessage",
-        payload: {
-          message: `error: ${error.response.data.error}`,
-          seconds: 5,
-          isAlert: true,
-        },
-      });
-    },
-  });
-
-  const handleLike = (blog) => {
-    likeBlogMutation.mutate({ ...blog, likes: blog.likes + 1 });
-    notificationDispatch({
-      type: "setMessage",
-      payload: {
-        message: `liked blog ${blog.title}`,
-        seconds: 5,
-        isAlert: false,
-      },
-    });
-  };
-
   return (
     <div>
       {blogs.map((blog) => (
@@ -84,7 +48,7 @@ const BlogList = ({ blogs }) => {
           key={blog.id}
           blog={blog}
           user={userData.user}
-          addLikeCallback={handleLike}
+          //addLikeCallback={handleLike}
           removeCallback={handleRemove}
         />
       ))}
