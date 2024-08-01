@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import Notification from "./components/Notification";
 import blogService from "./services/blogs";
@@ -38,9 +38,6 @@ const App = () => {
 
   let users = [];
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
   const [notification, notificationDispatch] = useContext(NotificationContext);
   const [userData, userDispatch] = useContext(UserContext);
 
@@ -48,6 +45,9 @@ const App = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
+
+    let username = event.target.username.value;
+    let password = event.target.password.value;
 
     try {
       const user = await loginService.login({
@@ -69,8 +69,9 @@ const App = () => {
           isAlert: false,
         },
       });
-      setUsername("");
-      setPassword("");
+
+      username = "";
+      password = "";
     } catch (exception) {
       //setErrorMessage("Wrong credentials");
 
@@ -148,23 +149,11 @@ const App = () => {
         <form onSubmit={handleLogin}>
           <div>
             username
-            <input
-              type="text"
-              value={username}
-              name="Username"
-              data-testid="username"
-              onChange={({ target }) => setUsername(target.value)}
-            />
+            <input type="text" name="username" data-testid="username" />
           </div>
           <div>
             password
-            <input
-              type="password"
-              value={password}
-              name="Password"
-              data-testid="password"
-              onChange={({ target }) => setPassword(target.value)}
-            />
+            <input type="password" name="password" data-testid="password" />
           </div>
           <button type="submit">login</button>
         </form>
@@ -185,21 +174,19 @@ const App = () => {
         <Link style={padding} to="/users">
           users
         </Link>
+        {userData.user.name} logged-in{" "}
+        <button
+          onClick={() => {
+            userDispatch({ type: "LOGOUT_USER" });
+          }}
+        >
+          logout{" "}
+        </button>
       </div>
 
       <div>
         <h2>blogs</h2>
         <Notification />
-        <p>
-          {userData.user.name} logged-in{" "}
-          <button
-            onClick={() => {
-              userDispatch({ type: "LOGOUT_USER" });
-            }}
-          >
-            logout{" "}
-          </button>
-        </p>
 
         <Routes>
           <Route path="/users" element={<UsersRoute users={users} />} />
