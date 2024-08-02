@@ -43,6 +43,9 @@ const BlogRoute = ({ blog }) => {
     });
   };
 
+  console.log("BlogRoute blog ", blog);
+  console.log("BlogRoute blog comments ", blog.comments);
+
   return (
     <div>
       <h1>{blog.title}</h1>
@@ -54,6 +57,12 @@ const BlogRoute = ({ blog }) => {
         </span>
       </div>
       <div>added by {blog.user.name}</div>
+      <h3>comments</h3>
+      <ul>
+        {blog.comments.map((comment) => {
+          return <li key={comment.id}>{comment.text}</li>;
+        })}
+      </ul>
     </div>
   );
 };
