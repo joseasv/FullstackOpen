@@ -8,7 +8,7 @@ const UserRoute = ({ user }) => {
       <div>
         <h1>{user.name}</h1>
         <h2>added blogs</h2>
-        <ul>
+        <ul className="menu bg-base-200 rounded-box w-56">
           {user.blogs.map((blog) => (
             <li key={blog.id}>{blog.title}</li>
           ))}

@@ -4,6 +4,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import blogService from "../services/blogs";
 
 const BlogRoute = ({ blog }) => {
+  /*const Button = styled.button`
+    background: Bisque;
+    font-size: 1em;
+    margin: 1em;
+    padding: 0.25em 1em;
+    border: 2px solid Chocolate;
+    border-radius: 3px;
+  `;
+
+  const Input = styled.input`
+    margin: 0.25em;
+  `;*/
+
   const queryClient = useQueryClient();
   const [notification, notificationDispatch] = useContext(NotificationContext);
 
@@ -95,9 +108,11 @@ const BlogRoute = ({ blog }) => {
   console.log("BlogRoute blog comments ", blog.comments);
 
   return (
-    <div>
-      <h1>{blog.title}</h1>
-      <a href={blog.url}>{blog.url}</a>
+    <div className="prose">
+      <h2>{blog.title}</h2>
+      <a className="link link-primary" href={blog.url}>
+        {blog.url}
+      </a>
       <div>
         <span>
           {blog.likes} likes{" "}
@@ -109,7 +124,7 @@ const BlogRoute = ({ blog }) => {
       <form onSubmit={handleCommentAdd}>
         <input name="comment" /> <button type="submit">add comment</button>
       </form>
-      <ul>
+      <ul className="menu bg-base-200 rounded-box w-56">
         {blog.comments.map((comment) => {
           return <li key={comment.id}>{comment.text}</li>;
         })}

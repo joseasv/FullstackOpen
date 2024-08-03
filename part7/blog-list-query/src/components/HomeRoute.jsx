@@ -9,7 +9,7 @@ const HomeRoute = ({ blogs }) => {
   return (
     <div>
       <Togglable buttonLabel="new blog" ref={blogFormRef}>
-        <h2>create new</h2>
+        <h2 className="text-2xl font-bold">Create new blog entry</h2>
         <AddBlogForm togglableRef={blogFormRef} />
       </Togglable>
       <BlogList blogs={blogs} />

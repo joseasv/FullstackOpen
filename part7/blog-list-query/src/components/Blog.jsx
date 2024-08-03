@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-const Blog = ({ blog, user, removeCallback }) => {
+const Blog = ({ blog, user, removeCallback, isLast }) => {
   const [visible, setVisible] = useState(false);
 
   const blogStyle = {
@@ -18,13 +18,14 @@ const Blog = ({ blog, user, removeCallback }) => {
   console.log(user.username, blog.user.username);
 
   return (
-    <div style={blogStyle} className="visibleBlogData">
-      <Link to={`/blogs/${blog.id}`}>
+    <div className="visibleBlogData">
+      <Link className="link" to={`/blogs/${blog.id}`}>
         {blog.title} {blog.author}
       </Link>
+      {!isLast ? <div className="divider py-0"></div> : null}
 
       <div style={showWhenVisible} className="notVisibleBlogData">
-        <div>{blog.url} </div>
+        <div className="link link-primary">{blog.url} </div>
 
         <div>{blog.user && blog.user.name}</div>
         {blog.user.username === user.username && (

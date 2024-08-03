@@ -42,14 +42,15 @@ const BlogList = ({ blogs }) => {
   };
 
   return (
-    <div>
-      {blogs.map((blog) => (
+    <div className="menu-lg bg-base-200 w-56">
+      {blogs.map((blog, index) => (
         <Blog
           key={blog.id}
           blog={blog}
           user={userData.user}
           //addLikeCallback={handleLike}
           removeCallback={handleRemove}
+          isLast={index === blogs.length - 1 ? true : false}
         />
       ))}
     </div>

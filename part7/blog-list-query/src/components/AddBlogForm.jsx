@@ -53,18 +53,21 @@ const AddBlogForm = ({ togglableRef }) => {
   };
 
   return (
-    <form onSubmit={addBlog}>
-      <div>
-        title: <input data-testid="title" name="title" />
+    <form className="grid grid-cols-1 gap-6" onSubmit={addBlog}>
+      <div className="block">
+        title: <input className="mt-1 block" data-testid="title" name="title" />
       </div>
-      <div>
-        author: <input data-testid="author" name="author" />
+      <div className="block">
+        author:{" "}
+        <input className="mt-1 block" data-testid="author" name="author" />
       </div>
-      <div>
-        url: <input data-testid="url" name="url" />
+      <div className="block">
+        url: <input className="mt-1 block" data-testid="url" name="url" />
       </div>
-      <div>
-        <button type="submit">create</button>
+      <div className="block">
+        <button className="btn btn-sm" type="submit">
+          create
+        </button>
       </div>
     </form>
   );

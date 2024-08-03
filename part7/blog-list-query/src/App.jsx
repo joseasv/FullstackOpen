@@ -155,7 +155,9 @@ const App = () => {
             password
             <input type="password" name="password" data-testid="password" />
           </div>
-          <button type="submit">login</button>
+          <button className="btn btn-sm" type="submit">
+            login
+          </button>
         </form>
       </div>
     );
@@ -167,15 +169,16 @@ const App = () => {
 
   return (
     <div>
-      <nav>
-        <Link style={padding} to="/">
+      <nav className="navbar-start bg-secondary">
+        <Link className="link" style={padding} to="/">
           home
         </Link>
-        <Link style={padding} to="/users">
+        <Link className="link" style={padding} to="/users">
           users
         </Link>
         {userData.user.name} logged-in{" "}
         <button
+          className="btn btn-xs"
           onClick={() => {
             userDispatch({ type: "LOGOUT_USER" });
           }}
@@ -185,7 +188,7 @@ const App = () => {
       </nav>
 
       <div>
-        <h2>blogs</h2>
+        <h2 className="text-2xl font-bold py-4">Full Stack Open blogs app</h2>
         <Notification />
 
         <Routes>

@@ -3,7 +3,7 @@ import UserRow from "./UserRow";
 const UserTable = ({ users }) => {
   return (
     <div>
-      <table>
+      <table className="table-md">
         <thead>
           <tr>
             <th scope="col">Name</th>
