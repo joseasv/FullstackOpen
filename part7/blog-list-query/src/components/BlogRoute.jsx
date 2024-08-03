@@ -43,6 +43,54 @@ const BlogRoute = ({ blog }) => {
     });
   };
 
+  const commentMutation = useMutation({
+    mutationFn: blogService.commentBlog,
+    onSuccess: (commentedBlog) => {
+      console.log("commentMutation commentedBlog ", commentedBlog);
+      const blogs = queryClient.getQueryData(["blogs"]);
+      console.log("commentMutation blogs ", blogs);
+      queryClient.setQueryData(
+        ["blogs"],
+        blogs.map((blog) => {
+          console.log(blog);
+          return blog.id === commentedBlog.id ? commentedBlog : blog;
+        }),
+      );
+    },
+    onError: (error) => {
+      notificationDispatch({
+        type: "setMessage",
+        payload: {
+          message: `error: ${error.response.data.error}`,
+          seconds: 5,
+          isAlert: true,
+        },
+      });
+    },
+  });
+
+  const handleCommentAdd = (event) => {
+    event.preventDefault();
+    const comment = event.target.comment.value;
+    console.log("handleCommentAdd comment ", comment);
+
+    commentMutation.mutate({
+      blog: blog,
+      comment: comment,
+    });
+
+    notificationDispatch({
+      type: "setMessage",
+      payload: {
+        message: `added comment to blog ${blog.title}`,
+        seconds: 5,
+        isAlert: false,
+      },
+    });
+
+    event.target.comment.value = "";
+  };
+
   console.log("BlogRoute blog ", blog);
   console.log("BlogRoute blog comments ", blog.comments);
 
@@ -58,6 +106,9 @@ const BlogRoute = ({ blog }) => {
       </div>
       <div>added by {blog.user.name}</div>
       <h3>comments</h3>
+      <form onSubmit={handleCommentAdd}>
+        <input name="comment" /> <button type="submit">add comment</button>
+      </form>
       <ul>
         {blog.comments.map((comment) => {
           return <li key={comment.id}>{comment.text}</li>;

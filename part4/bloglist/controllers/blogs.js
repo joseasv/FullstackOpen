@@ -104,7 +104,9 @@ blogsRouter.put("/:id/comments", async (request, response) => {
   const commentText = request.body.comment;
 
   console.log("comment to add ", commentText);
-  const commentedBlog = await Blog.findById({ _id: request.params.id });
+  const commentedBlog = await Blog.findById({
+    _id: request.params.id,
+  });
 
   console.log("commented blog ", commentedBlog);
 
@@ -116,7 +118,7 @@ blogsRouter.put("/:id/comments", async (request, response) => {
   if (commentedBlog) {
     //commentedBlog.comments = commentedBlog.comments.concat(newComment._id);
     commentedBlog.comments.push(newComment);
-
+    await commentedBlog.populate("comments", { text: 1 });
     await commentedBlog.save();
 
     response.status(200).json(commentedBlog).end();

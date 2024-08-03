@@ -167,7 +167,7 @@ const App = () => {
 
   return (
     <div>
-      <div>
+      <nav>
         <Link style={padding} to="/">
           home
         </Link>
@@ -182,7 +182,7 @@ const App = () => {
         >
           logout{" "}
         </button>
-      </div>
+      </nav>
 
       <div>
         <h2>blogs</h2>
