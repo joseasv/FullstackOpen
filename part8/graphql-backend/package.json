@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@apollo/server": "^4.10.5",
+    "graphql": "^16.9.0"
+  },
+  "devDependencies": {
+    "prettier": "3.3.3"
+  }
+}
