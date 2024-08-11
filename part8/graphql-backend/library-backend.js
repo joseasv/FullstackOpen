@@ -1,5 +1,6 @@
 const { ApolloServer } = require("@apollo/server");
 const { startStandaloneServer } = require("@apollo/server/standalone");
+const { v1: uuid } = require("uuid");
 
 let authors = [
   {
@@ -120,6 +121,16 @@ const typeDefs = `
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
   }
+
+  type Mutation {
+    addBook (
+      title: String!
+      published: Int!
+      author: String!
+      genres: [String!]!
+    ): Book
+    editAuthor(name: String, setBornTo: Int): Author
+  }
 `;
 
 const resolvers = {
@@ -153,6 +164,40 @@ const resolvers = {
         return count;
       }, 0);
       return bookCount;
+    },
+  },
+  Mutation: {
+    addBook: (root, args) => {
+      console.log("root", root);
+      console.log("args", args);
+      const authorExists = authors.some((author) => {
+        //console.log(`comparing ${author.name} ${args.author}`);
+        return author.name === args.author;
+      });
+
+      if (!authorExists) {
+        authors = authors.concat({ name: args.author, id: uuid() });
+      }
+      const book = { ...args, id: uuid() };
+      books = books.concat(book);
+      return book;
+    },
+    editAuthor: (root, args) => {
+      const authorObject = authors.find((author) => author.name === args.name);
+      if (authorObject === undefined) {
+        return null;
+      } else {
+        authorObject.born = args.setBornTo;
+        authors = authors.map((author) => {
+          if (author.id === authorObject.id) {
+            return authorObject;
+          } else {
+            return author;
+          }
+        });
+        console.log("authors", authors);
+        return authorObject;
+      }
     },
   },
 };
