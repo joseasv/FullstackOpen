@@ -14,10 +14,10 @@ const Authors = () => {
   const submit = async (event) => {
     event.preventDefault();
 
-    console.log("setting born year");
-
     const name = event.target.name.value;
     const setBornTo = Number(event.target.born.value);
+
+    console.log(`setting born year to ${name} year ${setBornTo}`);
 
     editAuthorBornYear({ variables: { name, setBornTo } });
 
