@@ -1,30 +1,37 @@
-import { ALL_BOOKS, ME } from "../queries";
+import { ALL_BOOKS, ME, BOOKS_BY_GENRE } from "../queries";
 import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 
 const Recommend = () => {
   const [tableBooks, setTableBooks] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState("");
-  const result = useQuery(ALL_BOOKS);
+  const { result, error, data, refetch, loading } = useQuery(BOOKS_BY_GENRE, {
+    variables: {
+      genre: "",
+    },
+  });
   const resultMe = useQuery(ME);
+  let books = [];
 
   useEffect(() => {
-    console.log("useEffect triggered by result.data", result.data);
-    if (result.data && resultMe.data) {
-      console.log("Recommend books data ", result.data.allBooks);
-      const books = result.data.allBooks;
+    console.log("useEffect triggered by result.data", resultMe.data);
+    if (resultMe.data) {
       console.log("Recommend me data", resultMe.data.me.favoriteGenre);
       const favoriteGenre = resultMe.data.me.favoriteGenre;
       setSelectedGenre(favoriteGenre);
 
       console.log("selectedGenre", selectedGenre);
-      const filteredBooks = books.filter((book) =>
-        book.genres.includes(favoriteGenre),
-      );
-      console.log(filteredBooks);
-      setTableBooks(filteredBooks);
+      refetch({ genre: favoriteGenre });
     }
-  }, [result.data]);
+  }, [resultMe.data]);
+
+  if (loading) {
+    return <div>loading books...</div>;
+  }
+
+  if (data) {
+    books = data.allBooks;
+  }
 
   return (
     <div>
@@ -39,7 +46,7 @@ const Recommend = () => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {tableBooks.map((a) => (
+          {books.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>

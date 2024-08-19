@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
-import { ALL_BOOKS } from "../queries";
+import { BOOKS_BY_GENRE } from "../queries";
 import { useQuery } from "@apollo/client";
 
 const Books = () => {
-  const [tableBooks, setTableBooks] = useState([]);
   const [allGenres, setAllGenres] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState("");
-  const result = useQuery(ALL_BOOKS);
+  const { result, error, data, refetch, loading } = useQuery(BOOKS_BY_GENRE);
+  let books = [];
 
   useEffect(() => {
-    console.log("useEffect triggered by result.data", result.data);
-    if (result.data) {
-      const books = result.data.allBooks;
-      setTableBooks(books);
-
-      //setTableBooks(books);
+    if (allGenres.length === 0) {
       const genres = books.reduce((genresFound, book) => {
         //console.log("genresFound ", genresFound);
         //console.log("book ", book);
@@ -31,22 +26,23 @@ const Books = () => {
 
       setAllGenres(genres);
     }
-  }, [result.data]);
+  }, [data]);
+
+  if (loading) {
+    return <div>loading books...</div>;
+  }
+
+  if (data) {
+    books = data.allBooks;
+  }
 
   const filterBooks = (event) => {
     console.log(event);
     const genreFilter = event.target.innerText;
     setSelectedGenre(genreFilter);
-    const filteredBooks = result.data.allBooks.filter((book) =>
-      book.genres.includes(genreFilter),
-    );
-    setTableBooks(filteredBooks);
-    console.log("filtered books ", filteredBooks);
-  };
 
-  if (result.loading) {
-    return <div>loading books...</div>;
-  }
+    refetch({ genre: genreFilter });
+  };
 
   return (
     <div>
@@ -61,7 +57,7 @@ const Books = () => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {tableBooks.map((a) => (
+          {books.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>
@@ -79,7 +75,7 @@ const Books = () => {
         <button
           onClick={() => {
             setSelectedGenre("all genres");
-            setTableBooks(result.data.allBooks);
+            refetch({ genre: "" });
           }}
         >
           all genres
