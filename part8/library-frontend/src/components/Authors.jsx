@@ -2,13 +2,17 @@ import { ALL_AUTHORS, ALL_BOOKS } from "../queries";
 import { useQuery, useMutation } from "@apollo/client";
 import { EDIT_AUTHOR_BORN_YEAR } from "../queries";
 
-const Authors = () => {
+const Authors = ({ setError, token }) => {
   let authors = [];
 
   const result = useQuery(ALL_AUTHORS);
 
   const [editAuthorBornYear] = useMutation(EDIT_AUTHOR_BORN_YEAR, {
     refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    onError: (error) => {
+      const messages = error.graphQLErrors.map((e) => e.message).join("\n");
+      setError(messages);
+    },
   });
 
   const submit = async (event) => {
@@ -31,6 +35,7 @@ const Authors = () => {
 
   if (result.data) {
     authors = result.data.allAuthors;
+    //console.log("Authors authors ", authors);
   }
 
   return (
@@ -53,24 +58,30 @@ const Authors = () => {
         </tbody>
       </table>
 
-      <h2>Set Birthyear</h2>
-      <form onSubmit={submit}>
+      {token ? (
         <div>
-          name
-          <select name="name">
-            {authors.map((a) => (
-              <option key={a.name} value={a.name}>
-                {a.name}
-              </option>
-            ))}
-          </select>
+          <h2>Set Birthyear</h2>
+          <form onSubmit={submit}>
+            <div>
+              name
+              <select name="name">
+                {authors.map((a) => (
+                  <option key={a.name} value={a.name}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              born
+              <input type="number" name="born" />
+            </div>
+            <button type="submit">update author</button>
+          </form>
         </div>
-        <div>
-          born
-          <input type="number" name="born" />
-        </div>
-        <button type="submit">update author</button>
-      </form>
+      ) : (
+        <div></div>
+      )}
     </div>
   );
 };
