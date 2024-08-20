@@ -24,6 +24,9 @@ const NewBook = ({ setError }) => {
       const messages = error.graphQLErrors.map((e) => e.message).join("\n");
       setError(messages);
     },
+    /*update: (cache, response) => {
+      updateCache(cache, { query: ALL_BOOKS }, response.data.addBook);
+    },*/
   });
 
   const submit = async (event) => {
