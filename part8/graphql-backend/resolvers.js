@@ -23,7 +23,9 @@ const resolvers = {
         );
       }*/
 
-      if (args.genre) {
+      console.log(args);
+      if (args.genre && args.genre.length > 0) {
+        console.log("genre " + args.genre + " found");
         result = await Book.find({ genres: args.genre }).populate("author", {
           name: 1,
           born: 1,

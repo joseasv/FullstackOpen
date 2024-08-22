@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { BOOKS_BY_GENRE } from "../queries";
+import { ALL_BOOKS } from "../queries";
 import { useQuery } from "@apollo/client";
 
 const Books = () => {
   const [allGenres, setAllGenres] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState("");
-  const { result, error, data, refetch, loading } = useQuery(BOOKS_BY_GENRE);
+  const { result, error, data, refetch, loading } = useQuery(ALL_BOOKS);
   let books = [];
 
   useEffect(() => {

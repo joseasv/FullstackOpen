@@ -4,23 +4,33 @@ import NewBook from "./components/NewBook";
 import LoginForm from "./components/LoginForm";
 import { Routes, Route, Link, Navigate } from "react-router-dom";
 import { useState } from "react";
-import { useApolloClient, useSubscription } from "@apollo/client";
+import { useApolloClient, useQuery, useSubscription } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import Recommend from "./components/Recommend";
-import { ALL_BOOKS, BOOK_ADDED } from "./queries";
+import { BOOK_ADDED, ALL_BOOKS } from "./queries";
 
 // function that takes care of manipulating cache
 export const updateCache = (cache, query, addedBook) => {
   // helper that is used to eliminate saving same person twice
   const uniqByName = (a) => {
+    console.log("uniqByName", a);
     let seen = new Set();
-    return a.filter((item) => {
-      let k = item.name;
+    const uniqList = a.filter((item) => {
+      let k = item.title;
+      //console.log(`${k} seen.has(${k}) ${seen.has(k)} lenght ${seen.size}`);
       return seen.has(k) ? false : seen.add(k);
     });
+
+    //console.log("uniqList", uniqList);
+
+    return uniqList;
   };
 
+  console.log(query);
+
   cache.updateQuery(query, ({ allBooks }) => {
+    //console.log("allBooks", allBooks);
+    //console.log(uniqByName(allBooks.concat(addedBook)));
     return {
       allBooks: uniqByName(allBooks.concat(addedBook)),
     };
@@ -29,6 +39,7 @@ export const updateCache = (cache, query, addedBook) => {
 
 const App = () => {
   const [errorMessage, setErrorMessage] = useState(null);
+  //useQuery(ALL_BOOKS);
   const [token, setToken] = useState(null);
   const client = useApolloClient();
   const navigate = useNavigate();
@@ -36,9 +47,10 @@ const App = () => {
   useSubscription(BOOK_ADDED, {
     onData: ({ data, client }) => {
       const addedBook = data.data.bookAdded;
-      console.log(addedBook);
+      //console.log(addedBook);
       notify(`${addedBook.title} added`);
-      //updateCache(client.cache, { query: ALL_BOOKS }, addedBook);
+      //console.log(client);
+      updateCache(client.cache, { query: ALL_BOOKS }, addedBook);
     },
   });
 

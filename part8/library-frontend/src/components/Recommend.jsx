@@ -1,15 +1,10 @@
-import { ALL_BOOKS, ME, BOOKS_BY_GENRE } from "../queries";
+import { ME, ALL_BOOKS } from "../queries";
 import { useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
 
 const Recommend = () => {
-  const [tableBooks, setTableBooks] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState("");
-  const { result, error, data, refetch, loading } = useQuery(BOOKS_BY_GENRE, {
-    variables: {
-      genre: "",
-    },
-  });
+  const { result, error, data, refetch, loading } = useQuery(ALL_BOOKS);
   const resultMe = useQuery(ME);
   let books = [];
 
