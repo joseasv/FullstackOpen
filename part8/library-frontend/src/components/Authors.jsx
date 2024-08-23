@@ -35,7 +35,7 @@ const Authors = ({ setError, token }) => {
 
   if (result.data) {
     authors = result.data.allAuthors;
-    //console.log("Authors authors ", authors);
+    console.log("Authors authors ", authors);
   }
 
   return (

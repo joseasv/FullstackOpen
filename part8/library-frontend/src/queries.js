@@ -18,6 +18,7 @@ export const ALL_AUTHORS = gql`
       id
       name
       born
+      bookCount
     }
   }
 `;

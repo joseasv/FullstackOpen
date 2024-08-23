@@ -43,7 +43,15 @@ const resolvers = {
       return result;
     },
     allAuthors: async () => {
-      const result = await Author.find({});
+      Author.schema.virtual("bookCount", {
+        ref: "Book",
+        localField: "_id",
+        foreignField: "author",
+        count: true,
+      });
+
+      const result = await Author.find({}).populate("bookCount");
+
       console.log("allAuthors ", result);
       return result;
     },
@@ -55,17 +63,6 @@ const resolvers = {
     },
     me: (root, args, context) => {
       return context.currentUser;
-    },
-  },
-  Author: {
-    bookCount: (root) => {
-      const bookCount = books.reduce((count, book) => {
-        if (book.author === root.name) {
-          return count + 1;
-        }
-        return count;
-      }, 0);
-      return bookCount;
     },
   },
   Mutation: {
