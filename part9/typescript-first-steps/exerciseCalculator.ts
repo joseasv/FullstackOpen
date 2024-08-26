@@ -1,3 +1,5 @@
+import { exerciseCalcParseArguments } from "./parsers"
+
 interface Result {
     periodLength: number,
     trainingDays: number,
@@ -43,6 +45,13 @@ const calculateExercise = (dailyExerciseHours: number[], target: number): Result
 
 }
 
-
-
-console.log(calculateExercise([3, 0, 2, 4.5, 0, 3, 1], 2))
+try {
+    const {period, target} = exerciseCalcParseArguments(process.argv)
+    console.log(calculateExercise(period, target))
+} catch (error: unknown) {
+  let errorMessage = 'Something bad happened.'
+  if (error instanceof Error) {
+    errorMessage += ' Error: ' + error.message;
+  }
+  console.log(errorMessage);
+}

@@ -1,3 +1,7 @@
+import { bmiParseArguments } from "./parsers"
+
+
+
 const calculateBmi = (height: number, mass: number): string => {
 
     //console.log(`mass ${mass} height ${height}`)
@@ -37,7 +41,16 @@ const calculateBmi = (height: number, mass: number): string => {
     }
 }
 
-const height: number = Number(process.argv[2])
-const mass: number = Number(process.argv[3])
 
-console.log(calculateBmi(height, mass))
+
+try {
+  const { height, mass } = bmiParseArguments(process.argv)
+  //console.log(`parsed arguments ${height} ${mass}`)
+  console.log(calculateBmi(height, mass))
+} catch (error: unknown) {
+  let errorMessage = 'Something bad happened.'
+  if (error instanceof Error) {
+    errorMessage += ' Error: ' + error.message;
+  }
+  console.log(errorMessage);
+}
