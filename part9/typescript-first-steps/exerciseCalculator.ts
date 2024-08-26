@@ -12,17 +12,17 @@ interface Result {
 
 const calculateExercise = (dailyExerciseHours: number[], target: number): Result => {
 
-    const periodLength = dailyExerciseHours.length
-    const trainingDays = dailyExerciseHours.reduce((days, day) => {if (day > 0) {
+    const periodLength: number = dailyExerciseHours.length
+    const trainingDays: number = dailyExerciseHours.reduce((days, day) => {if (day > 0) {
         return days + 1
     } else {
         return days
     }}, 0)
 
-    const average = dailyExerciseHours.reduce((hours, day) => hours + day) / dailyExerciseHours.length
-    const success = average >= target
-    let ratingDescription = "try to do more exercise!"
-    let rating = 1
+    const average: number = dailyExerciseHours.reduce((hours, day) => hours + day) / dailyExerciseHours.length
+    const success: boolean = average >= target
+    let ratingDescription: string = "try to do more exercise!"
+    let rating: number = 1
     if (success) {
         rating = 3
         ratingDescription = "good job!"
