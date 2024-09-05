@@ -7,6 +7,11 @@ import { NewPatientSchema } from "../utils";
 
 const router = express.Router();
 
+router.get("/:id", (req: Request, res: Response<Patient>) => {
+  const id: string = req.params.id;
+  res.send(patientService.getPatient(id));
+});
+
 router.get("/", (_req, res: Response<PublicFacingPatient[]>) => {
   res.send(patientService.getPublicFacingPatients());
 });

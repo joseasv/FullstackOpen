@@ -13,7 +13,7 @@ export interface Diagnosis {
   latin?: string;
 }
 
-export type PublicFacingPatient = Omit<Patient, "ssn">;
+export type PublicFacingPatient = Omit<Patient, "ssn" | "entries">;
 
 export type NewPatient = z.infer<typeof NewPatientSchema>;
 
