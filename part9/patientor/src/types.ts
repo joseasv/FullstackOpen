@@ -1,3 +1,13 @@
+import { EntrySchema } from "./utils";
+import { z } from "zod";
+
+export enum HealthCheckRating {
+  "Healthy" = 0,
+  "LowRisk" = 1,
+  "HighRisk" = 2,
+  "CriticalRisk" = 3,
+}
+
 export interface Diagnosis {
   code: string;
   name: string;
@@ -10,8 +20,7 @@ export enum Gender {
   Other = "other",
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Entry {}
+export type Entry = z.infer<typeof EntrySchema>;
 
 export interface Patient {
   id: string;

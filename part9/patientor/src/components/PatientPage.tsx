@@ -1,12 +1,11 @@
 import { Gender, Patient } from "../types";
 import { useParams } from "react-router-dom";
-import { Component, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import patientService from "../services/patients";
 
 import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
 import TransgenderIcon from "@mui/icons-material/Transgender";
-import { SvgIconClasses } from "@mui/material";
 
 type PatientParams = {
   id: string;
@@ -30,23 +29,25 @@ const PatientPage = () => {
   }, []);
 
   if (data) {
-    const genderIcon =
-      data.gender === Gender.Other
-        ? TransgenderIcon
-        : data.gender === Gender.Female
-          ? FemaleIcon
-          : MaleIcon;
-
     return (
       <div>
-        <h3>
+        <h2>
           {data.name} {data.gender === Gender.Male && <MaleIcon />}
           {data.gender === Gender.Female && <FemaleIcon />}
           {data.gender === Gender.Other && <TransgenderIcon />}
-        </h3>
+        </h2>
 
         <div>ssn: {data.ssn}</div>
         <div>occupation: {data.occupation}</div>
+        <h3>entries</h3>
+        {data.entries.map((entry) => (
+          <div>
+            <div>
+              {entry.date} <i>{entry.description}</i>
+            </div>
+            <ul>{entry.diagnosisCodes?.map((code) => <li>{code}</li>)}</ul>
+          </div>
+        ))}
       </div>
     );
   } else {
