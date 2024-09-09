@@ -8,11 +8,17 @@ const getDiagnoses = (): Diagnosis[] => {
   return diagnoses;
 };
 
-const addDiagnosis = () => {
-  return null;
+const getDiagnosis = (code: string): Diagnosis | undefined => {
+  return diagnoses.find((diagnosis) => diagnosis.code === code);
+};
+
+const addDiagnosis = (diagnosis: Diagnosis) => {
+  diagnoses.push(diagnosis);
+  return diagnosis;
 };
 
 export default {
   getDiagnoses,
   addDiagnosis,
+  getDiagnosis,
 };

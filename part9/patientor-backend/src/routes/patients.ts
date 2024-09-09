@@ -2,7 +2,7 @@ import express from "express";
 import patientService from "../services/patientService";
 import { NewPatient, Patient, PublicFacingPatient } from "../types";
 import { Response, Request, NextFunction } from "express";
-import { z } from "zod";
+import { errorMiddleware } from "./middleware";
 import { NewPatientSchema } from "../utils";
 
 const router = express.Router();
@@ -21,19 +21,6 @@ const newPatientParser = (req: Request, _res: Response, next: NextFunction) => {
     NewPatientSchema.parse(req.body);
     next();
   } catch (error: unknown) {
-    next(error);
-  }
-};
-
-const errorMiddleware = (
-  error: unknown,
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  if (error instanceof z.ZodError) {
-    res.status(400).send({ error: error.issues });
-  } else {
     next(error);
   }
 };
