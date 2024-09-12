@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import patientService from "../services/patients";
 import diagnosesService from "../services/diagnoses";
+import EntryDetails from "./EntryDetails";
 
 import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
@@ -14,21 +15,16 @@ type PatientParams = {
 
 const PatientPage = () => {
   const [data, setData] = useState<Patient>();
-  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
   const { id } = useParams<PatientParams>();
 
-  //console.log("data ", data);
+  console.log("data ", data);
   useEffect(() => {
     //console.log("useEffect");
     const fetchPatient = async () => {
       //console.log("id ", id);
       const patient = await patientService.getPatient(id);
       setData(patient);
-
-      const diagnosesData: Diagnosis[] = await diagnosesService.getAll();
-      //console.log(diagnosesData);
-      setDiagnoses(diagnosesData);
     };
 
     void fetchPatient();
@@ -47,22 +43,7 @@ const PatientPage = () => {
         <div>occupation: {data.occupation}</div>
         <h3>entries</h3>
         {data.entries.map((entry) => (
-          <div>
-            <div>
-              {entry.date} <i>{entry.description}</i>
-            </div>
-            <ul>
-              {entry.diagnosisCodes?.map((code) => (
-                <li>
-                  {code}{" "}
-                  {diagnoses.map((diagnosis) => {
-                    //console.log(code, " ", diagnosis.code);
-                    if (code === diagnosis.code) return diagnosis.name;
-                  })}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <EntryDetails key={entry.id} entry={entry} />
         ))}
       </div>
     );

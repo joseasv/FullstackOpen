@@ -1,4 +1,9 @@
-import { EntrySchema } from "./utils";
+import {
+  EntrySchema,
+  HealthCheckEntrySchema,
+  HospitalSchema,
+  OccupationalHealthcareEntrySchema,
+} from "./utils";
 import { z } from "zod";
 
 export enum HealthCheckRating {
@@ -21,6 +26,14 @@ export enum Gender {
 }
 
 export type Entry = z.infer<typeof EntrySchema>;
+
+export type Hospital = z.infer<typeof HospitalSchema>;
+
+export type OccupationalHealthcare = z.infer<
+  typeof OccupationalHealthcareEntrySchema
+>;
+
+export type HealthCheck = z.infer<typeof HealthCheckEntrySchema>;
 
 export interface Patient {
   id: string;
