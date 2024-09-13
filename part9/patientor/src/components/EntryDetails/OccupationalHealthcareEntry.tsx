@@ -11,7 +11,7 @@ const OccupationalHealthcareEntry = ({ data }: Props) => {
   return (
     <Box sx={{ p: 2, border: 1, borderRadius: 1, margin: 1 }}>
       <div>
-        {data.date} <MedicalInformationIcon />
+        {data.date} <MedicalInformationIcon /> <i>{data.employerName}</i>
       </div>
       <div>
         <i>{data.description}</i>
