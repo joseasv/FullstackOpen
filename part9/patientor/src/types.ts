@@ -2,6 +2,7 @@ import {
   EntrySchema,
   HealthCheckEntrySchema,
   HospitalSchema,
+  NewEntrySchema,
   OccupationalHealthcareEntrySchema,
 } from "./utils";
 import { z } from "zod";
@@ -26,6 +27,8 @@ export enum Gender {
 }
 
 export type Entry = z.infer<typeof EntrySchema>;
+
+export type NewEntry = z.infer<typeof NewEntrySchema>;
 
 export type Hospital = z.infer<typeof HospitalSchema>;
 

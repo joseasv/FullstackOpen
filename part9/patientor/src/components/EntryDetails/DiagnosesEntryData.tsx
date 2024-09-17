@@ -9,34 +9,33 @@ interface Props {
 const DiagnosesEntryData = ({ diagnosisCodes }: Props) => {
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
+  console.log(diagnosisCodes);
   useEffect(() => {
     const fetchDiagnoses = async () => {
       const diagnosesData: Diagnosis[] = await diagnosesService.getAll();
-      //console.log(diagnosesData);
+
       setDiagnoses(diagnosesData);
     };
 
     fetchDiagnoses();
   }, []);
 
-
-    return (
-      <div>
-        <ul>
-          {diagnosisCodes?.map((code) => (
-            <li key={code}>
-              {code}{" "}
-              {diagnoses.map((diagnosis) => {
-                if (diagnosis.code === code) {
-                  return diagnosis.name;
-                }
-              })}
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-
+  return (
+    <div>
+      <ul>
+        {diagnosisCodes?.map((code) => (
+          <li key={code}>
+            {code}{" "}
+            {diagnoses.map((diagnosis) => {
+              if (diagnosis.code === code) {
+                return diagnosis.name;
+              }
+            })}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };
 
 export default DiagnosesEntryData;

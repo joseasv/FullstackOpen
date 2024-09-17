@@ -40,3 +40,9 @@ export const EntrySchema = z.discriminatedUnion("type", [
   HospitalSchema,
   HealthCheckEntrySchema,
 ]);
+
+export const NewEntrySchema = z.discriminatedUnion("type", [
+  OccupationalHealthcareEntrySchema.omit({ id: true }),
+  HospitalSchema.omit({ id: true }),
+  HealthCheckEntrySchema.omit({ id: true }),
+]);

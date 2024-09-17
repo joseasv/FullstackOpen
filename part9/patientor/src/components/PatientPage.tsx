@@ -1,9 +1,10 @@
-import { Diagnosis, Gender, Patient } from "../types";
+import { Diagnosis, Entry, Gender, NewEntry, Patient } from "../types";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import patientService from "../services/patients";
 import diagnosesService from "../services/diagnoses";
 import EntryDetails from "./EntryDetails";
+import HealthCheckEntryForm from "./HealthCheckEntryForm";
 
 import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
@@ -30,6 +31,17 @@ const PatientPage = () => {
     void fetchPatient();
   }, []);
 
+  const updatePatient = (newEntry: Entry) => {
+    if (data !== undefined) {
+      const newEntries = data?.entries.concat(newEntry);
+
+      setData({
+        ...data,
+        entries: newEntries,
+      });
+    }
+  };
+
   if (data) {
     return (
       <div>
@@ -41,6 +53,7 @@ const PatientPage = () => {
 
         <div>ssn: {data.ssn}</div>
         <div>occupation: {data.occupation}</div>
+        <HealthCheckEntryForm updatePatient={updatePatient} patientId={id} />
         <h3>entries</h3>
         {data.entries.map((entry) => (
           <EntryDetails key={entry.id} entry={entry} />

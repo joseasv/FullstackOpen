@@ -1,0 +1,241 @@
+import {
+  Box,
+  FormControl,
+  Button,
+  Collapse,
+  TextField,
+  colors,
+  Alert,
+  Container,
+  Stack,
+} from "@mui/material";
+import React, { useState } from "react";
+import { NewEntry, Entry } from "../types";
+import patientsService from "../services/patients";
+import axios from "axios";
+import { ZodIssue } from "zod";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+
+interface Props {
+  updatePatient: (data: Entry) => void;
+  patientId: string;
+}
+
+interface FormData {
+  description: string;
+  date: string;
+  specialist: string;
+  healthCheckRating: string;
+}
+
+const initialFormState = {
+  description: "",
+  date: "",
+  specialist: "",
+  healthCheckRating: 0,
+};
+
+const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
+  const [isOpen, setIsOpen] = useState<boolean | undefined>(false);
+  const [notification, setNotification] = useState<string>("");
+  const [formData, setFormData] = useState<FormData>(initialFormState);
+
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = event.target;
+
+    console.log(`${id} : ${value}`);
+    setFormData({
+      ...formData,
+      [id]: value,
+    });
+
+    console.log("formData ", formData);
+  };
+
+  let disabledAddButton: boolean =
+    formData.description.length > 0 &&
+    formData.date.length > 0 &&
+    formData.specialist.length > 0 &&
+    formData.healthCheckRating.length > 0;
+
+  console.log("formData.description ", formData.description);
+  console.log("formData.date ", formData.date);
+  console.log("formData.specified", formData.specialist);
+  console.log("formData.healthCheckRating ", formData.healthCheckRating);
+
+  console.log("disabledAddButton ", disabledAddButton);
+
+  let timeoutId: number | undefined = undefined;
+  const clearNotificationTimeout = () => {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  const addNewHealthCheckEntry = (event: React.SyntheticEvent) => {
+    console.log("adding new healthcheck entry");
+    event.preventDefault();
+
+    const target = event.target as typeof event.target & {
+      description: { value: string };
+      date: { value: string };
+      specialist: { value: string };
+      healthCheckRating: { value: string };
+      diagnosisCodes: { value: string };
+    };
+
+    const description: string = target.description.value;
+    const date: string = target.date.value;
+    const specialist: string = target.specialist.value;
+    const healthCheckRating: number = Number(target.healthCheckRating.value);
+
+    const diagnosisCodes: string[] | undefined =
+      target.diagnosisCodes.value.length > 0
+        ? target.diagnosisCodes.value.split(",")
+        : undefined;
+
+    const newEntry: NewEntry = {
+      type: "HealthCheck",
+      description,
+      date,
+      specialist,
+      healthCheckRating,
+      diagnosisCodes,
+    };
+
+    console.log("adding ", newEntry);
+
+    patientsService
+      .addEntry(patientId, newEntry)
+      .then((data: Entry) => {
+        updatePatient(data);
+
+        target.description.value = "";
+        target.date.value = "";
+        target.specialist.value = "";
+        target.healthCheckRating.value = "";
+        target.diagnosisCodes.value = "";
+
+        disabledAddButton = false;
+      })
+      .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          console.log(error.response?.data);
+          const firstError: ZodIssue = error.response?.data
+            .error[0] as ZodIssue;
+
+          console.log("firstError ");
+          console.log(firstError);
+
+          if (firstError) {
+            const fieldName: string = firstError.path[0] as string;
+            const splittedMessage: string[] = firstError.message.split("'");
+            const fieldValue: string =
+              splittedMessage[splittedMessage.length - 2];
+
+            console.log(fieldName);
+            console.log(fieldValue);
+
+            clearNotificationTimeout();
+            setNotification(`Error: Invalid ${fieldName} value: ${fieldValue}`);
+            timeoutId = setTimeout(() => {
+              setNotification("");
+            }, 3000);
+          }
+        }
+      });
+  };
+
+  return (
+    <div>
+      <Collapse in={!isOpen} unmountOnExit timeout="auto">
+        <Button
+          onClick={() => {
+            setIsOpen(!isOpen);
+          }}
+        >
+          Add HealthCheck entry
+        </Button>
+      </Collapse>
+      {notification && (
+        <Alert icon={<ErrorOutlineIcon fontSize="inherit" />} severity="error">
+          {notification}
+        </Alert>
+      )}
+
+      <Collapse in={isOpen} unmountOnExit timeout="auto">
+        <Box sx={{ p: 2, border: "1px dashed black" }}>
+          <form onSubmit={addNewHealthCheckEntry}>
+            <FormControl fullWidth margin="normal">
+              <Box
+                sx={{
+                  fontWeight: "bold",
+                }}
+              >
+                New HealthCheck entry
+              </Box>
+              <TextField
+                id="description"
+                label="Description"
+                variant="standard"
+                onChange={onChange}
+              />
+              <TextField
+                id="date"
+                label="Date"
+                variant="standard"
+                onChange={onChange}
+              />
+              <TextField
+                id="specialist"
+                label="Specialist"
+                variant="standard"
+                onChange={onChange}
+              />
+              <TextField
+                id="healthCheckRating"
+                label="HealthCheck Rating"
+                variant="standard"
+                type="number"
+                onChange={onChange}
+              />
+              <TextField
+                id="diagnosisCodes"
+                label="Diagnosis codes"
+                variant="standard"
+              />
+            </FormControl>
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: "space-between",
+              }}
+            >
+              <Button
+                sx={{ float: "left" }}
+                variant="contained"
+                color="error"
+                onClick={() => {
+                  setIsOpen(false);
+                  setFormData(initialFormState);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                sx={{ float: "right" }}
+                variant="contained"
+                type="submit"
+                disabled={!disabledAddButton}
+              >
+                Add
+              </Button>
+            </Stack>
+          </form>
+        </Box>
+      </Collapse>
+    </div>
+  );
+};
+
+export default HealthCheckEntryForm;
