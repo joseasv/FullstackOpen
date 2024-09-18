@@ -17,10 +17,14 @@ const HospitalEntry = ({ data }: Props) => {
         <i>{data.description}</i>
       </div>
       <div>
-        <h4>Discharge</h4>
-        <div>
-          {data.discharge.date} {data.discharge.criteria}
-        </div>
+        <Box sx={{ p: 1 }}>
+          <div>
+            <b>Discharge</b>
+          </div>
+          <div>
+            {data.discharge.date} {data.discharge.criteria}
+          </div>
+        </Box>
       </div>
       {data.diagnosisCodes && (
         <DiagnosesEntryData diagnosisCodes={data.diagnosisCodes} />

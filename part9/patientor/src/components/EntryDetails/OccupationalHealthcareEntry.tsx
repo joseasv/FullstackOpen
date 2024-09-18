@@ -17,7 +17,7 @@ const OccupationalHealthcareEntry = ({ data }: Props) => {
         <i>{data.description}</i>
       </div>
       {data.sickLeave && (
-        <Box sx={{ marginTop: 1 }}>
+        <Box sx={{ marginTop: 1, p: 1 }}>
           <div>
             <b>Sick leave</b>
           </div>

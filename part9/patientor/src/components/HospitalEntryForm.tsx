@@ -4,10 +4,9 @@ import {
   Button,
   Collapse,
   TextField,
-  colors,
   Alert,
-  Container,
   Stack,
+  FormLabel,
 } from "@mui/material";
 import React, { useState } from "react";
 import { NewEntry, Entry } from "../types";
@@ -15,6 +14,7 @@ import patientsService from "../services/patients";
 import axios from "axios";
 import { ZodIssue } from "zod";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { Label } from "@mui/icons-material";
 
 interface Props {
   updatePatient: (data: Entry) => void;
@@ -25,17 +25,19 @@ interface FormData {
   description: string;
   date: string;
   specialist: string;
-  healthCheckRating: string;
+  dischargeDate: string;
+  dischargeCriteria: string;
 }
 
 const initialFormState = {
   description: "",
   date: "",
   specialist: "",
-  healthCheckRating: "",
+  dischargeDate: "",
+  dischargeCriteria: "",
 };
 
-const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
+const HospitalEntryForm = ({ updatePatient, patientId }: Props) => {
   const [isOpen, setIsOpen] = useState<boolean | undefined>(false);
   const [notification, setNotification] = useState<string>("");
   const [formData, setFormData] = useState<FormData>(initialFormState);
@@ -56,12 +58,14 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     formData.description.length > 0 &&
     formData.date.length > 0 &&
     formData.specialist.length > 0 &&
-    formData.healthCheckRating.length > 0;
+    formData.dischargeCriteria.length > 0 &&
+    formData.dischargeDate.length > 0;
 
   console.log("formData.description ", formData.description);
   console.log("formData.date ", formData.date);
   console.log("formData.specified", formData.specialist);
-  console.log("formData.healthCheckRating ", formData.healthCheckRating);
+  console.log("formData.dischargeCriteria ", formData.dischargeCriteria);
+  console.log("formData.dischargeDate ", formData.dischargeDate);
 
   console.log("disabledAddButton ", disabledAddButton);
 
@@ -72,22 +76,24 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     }
   };
 
-  const addNewHealthCheckEntry = (event: React.SyntheticEvent) => {
-    console.log("adding new healthcheck entry");
+  const addNewHospitalEntry = (event: React.SyntheticEvent) => {
+    console.log("adding new hospital entry");
     event.preventDefault();
 
     const target = event.target as typeof event.target & {
       description: { value: string };
       date: { value: string };
       specialist: { value: string };
-      healthCheckRating: { value: string };
+      dischargeDate: { value: string };
+      dischargeCriteria: { value: string };
       diagnosisCodes: { value: string };
     };
 
     const description: string = target.description.value;
     const date: string = target.date.value;
     const specialist: string = target.specialist.value;
-    const healthCheckRating: number = Number(target.healthCheckRating.value);
+    const dischargeDate: string = target.dischargeDate.value;
+    const dischargeCriteria: string = target.dischargeCriteria.value;
 
     const diagnosisCodes: string[] | undefined =
       target.diagnosisCodes.value.length > 0
@@ -95,11 +101,11 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
         : undefined;
 
     const newEntry: NewEntry = {
-      type: "HealthCheck",
+      type: "Hospital",
       description,
       date,
       specialist,
-      healthCheckRating,
+      discharge: { date: dischargeDate, criteria: dischargeCriteria },
       diagnosisCodes,
     };
 
@@ -114,7 +120,8 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
           target.description.value = "";
           target.date.value = "";
           target.specialist.value = "";
-          target.healthCheckRating.value = "";
+          target.dischargeDate.value = "";
+          target.dischargeCriteria.value = "";
           target.diagnosisCodes.value = "";
 
           disabledAddButton = false;
@@ -158,7 +165,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
             setIsOpen(!isOpen);
           }}
         >
-          Add HealthCheck entry
+          Add Hospital entry
         </Button>
       </Collapse>
       {notification && (
@@ -169,14 +176,14 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
 
       <Collapse in={isOpen} unmountOnExit timeout="auto">
         <Box sx={{ p: 2, border: "1px dashed black" }}>
-          <form onSubmit={addNewHealthCheckEntry}>
+          <form onSubmit={addNewHospitalEntry}>
             <FormControl fullWidth margin="normal">
               <Box
                 sx={{
                   fontWeight: "bold",
                 }}
               >
-                New HealthCheck entry
+                New Hospital entry
               </Box>
               <TextField
                 id="description"
@@ -196,13 +203,23 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
                 variant="standard"
                 onChange={onChange}
               />
-              <TextField
-                id="healthCheckRating"
-                label="HealthCheck Rating"
-                variant="standard"
-                type="number"
-                onChange={onChange}
-              />
+              <Box sx={{ p: 1 }}>
+                <FormControl>
+                  <FormLabel>Discharge</FormLabel>
+                  <TextField
+                    id="dischargeDate"
+                    label="Date"
+                    variant="standard"
+                    onChange={onChange}
+                  />
+                  <TextField
+                    id="dischargeCriteria"
+                    label="Criteria"
+                    variant="standard"
+                    onChange={onChange}
+                  />
+                </FormControl>
+              </Box>
               <TextField
                 id="diagnosisCodes"
                 label="Diagnosis codes"
@@ -242,4 +259,4 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
   );
 };
 
-export default HealthCheckEntryForm;
+export default HospitalEntryForm;

@@ -9,6 +9,8 @@ import HealthCheckEntryForm from "./HealthCheckEntryForm";
 import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
 import TransgenderIcon from "@mui/icons-material/Transgender";
+import HospitalEntryForm from "./HospitalEntryForm";
+import OccupationalHealthcareEntryForm from "./OccupationalHealthcareEntryForm";
 
 type PatientParams = {
   id: string;
@@ -54,6 +56,11 @@ const PatientPage = () => {
         <div>ssn: {data.ssn}</div>
         <div>occupation: {data.occupation}</div>
         <HealthCheckEntryForm updatePatient={updatePatient} patientId={id} />
+        <HospitalEntryForm updatePatient={updatePatient} patientId={id} />
+        <OccupationalHealthcareEntryForm
+          updatePatient={updatePatient}
+          patientId={id}
+        />
         <h3>entries</h3>
         {data.entries.map((entry) => (
           <EntryDetails key={entry.id} entry={entry} />
