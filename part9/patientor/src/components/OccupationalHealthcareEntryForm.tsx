@@ -9,6 +9,7 @@ import {
   Container,
   InputLabel,
   FormLabel,
+  AlertColor,
 } from "@mui/material";
 import React, { startTransition, useState } from "react";
 import { NewEntry, Entry } from "../types";
@@ -16,6 +17,7 @@ import patientsService from "../services/patients";
 import axios from "axios";
 import { ZodIssue } from "zod";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { CheckCircleOutline } from "@mui/icons-material";
 import { Label } from "@mui/icons-material";
 
 interface Props {
@@ -46,7 +48,10 @@ const OccupationalHealthcareEntryForm = ({
   patientId,
 }: Props) => {
   const [isOpen, setIsOpen] = useState<boolean | undefined>(false);
-  const [notification, setNotification] = useState<string>("");
+  const [alertProps, setAlertProps] = useState<{
+    severity: AlertColor | undefined;
+    notification: string;
+  }>();
   const [formData, setFormData] = useState<FormData>(initialFormState);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,6 +147,15 @@ const OccupationalHealthcareEntryForm = ({
           target.diagnosisCodes.value = "";
 
           disabledAddButton = false;
+
+          clearNotificationTimeout();
+          setAlertProps({
+            severity: "success",
+            notification: `OccupationalHealthcare entry added succesfully`,
+          });
+          timeoutId = setTimeout(() => {
+            setAlertProps(undefined);
+          }, 3000);
         })
         .catch((error) => {
           if (axios.isAxiosError(error)) {
@@ -161,12 +175,13 @@ const OccupationalHealthcareEntryForm = ({
               console.log(fieldName);
               console.log(fieldValue);
 
-              clearNotificationTimeout();
-              setNotification(
-                `Error: Invalid ${fieldName} value: ${fieldValue}`,
-              );
+              setAlertProps({
+                severity: "error",
+                notification: `Error: Invalid ${fieldName} value: ${fieldValue}`,
+              });
+
               timeoutId = setTimeout(() => {
-                setNotification("");
+                setAlertProps(undefined);
               }, 3000);
             }
           }
@@ -185,9 +200,15 @@ const OccupationalHealthcareEntryForm = ({
           Add Occupational Healthcare entry
         </Button>
       </Collapse>
-      {notification && (
-        <Alert icon={<ErrorOutlineIcon fontSize="inherit" />} severity="error">
-          {notification}
+      {alertProps && (
+        <Alert
+          iconMapping={{
+            success: <CheckCircleOutline fontSize="inherit" />,
+            error: <ErrorOutlineIcon fontSize="inherit" />,
+          }}
+          severity={alertProps.severity}
+        >
+          {alertProps.notification}
         </Alert>
       )}
 

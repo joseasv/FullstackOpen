@@ -4,17 +4,23 @@ import {
   Button,
   Collapse,
   TextField,
-  colors,
   Alert,
-  Container,
+  Select,
   Stack,
+  InputLabel,
+  AlertColor,
+  FormControlClasses,
+  SelectChangeEvent,
 } from "@mui/material";
-import React, { useState } from "react";
-import { NewEntry, Entry } from "../types";
+import React, { useState, useEffect } from "react";
+import { NewEntry, Entry, Diagnosis, HealthCheckRating } from "../types";
 import patientsService from "../services/patients";
 import axios from "axios";
 import { ZodIssue } from "zod";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { CheckCircleOutline } from "@mui/icons-material";
+import MenuItem from "@mui/material/MenuItem";
+import diagnosesService from "../services/diagnoses";
 
 interface Props {
   updatePatient: (data: Entry) => void;
@@ -26,6 +32,7 @@ interface FormData {
   date: string;
   specialist: string;
   healthCheckRating: string;
+  diagnosisCodes: string[];
 }
 
 const initialFormState = {
@@ -33,24 +40,63 @@ const initialFormState = {
   date: "",
   specialist: "",
   healthCheckRating: "",
+  diagnosisCodes: [],
 };
 
 const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
   const [isOpen, setIsOpen] = useState<boolean | undefined>(false);
-  const [notification, setNotification] = useState<string>("");
+  const [diagnosesFromServer, setDiagnosesFromServer] = useState<Diagnosis[]>(
+    [],
+  );
+  const [alertProps, setAlertProps] = useState<{
+    severity: AlertColor | undefined;
+    notification: string;
+  }>();
   const [formData, setFormData] = useState<FormData>(initialFormState);
 
+  useEffect(() => {
+    const fetchDiagnoses = async () => {
+      const diagnosesData: Diagnosis[] = await diagnosesService.getAll();
+
+      setDiagnosesFromServer(diagnosesData);
+    };
+
+    fetchDiagnoses();
+  }, []);
+
+  const updateFormData = (id: string, value: string | string[]) => {
+    console.log(`${id} : ${value}`);
+    if (id !== undefined) {
+      setFormData({
+        ...formData,
+        [id]: value,
+      });
+
+      console.log("formData ", formData);
+    }
+  };
+
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = event.target;
+    let { id, value } = event.target;
 
     console.log(`${id} : ${value}`);
-    setFormData({
-      ...formData,
-      [id]: value,
-    });
-
-    console.log("formData ", formData);
+    updateFormData(id, value);
   };
+
+  const onChangeHealthcheckRating = (event: SelectChangeEvent) => {
+    let { value } = event.target;
+    console.log("onChangeHealthcheckRating ", value);
+    updateFormData("healthCheckRating", value);
+  };
+
+  const onChangeDiagnosisCodes = (event: SelectChangeEvent) => {
+    let { value } = event.target;
+    console.log("onChangeDiagnosisCodes ", value);
+
+    updateFormData("diagnosisCodes", value);
+  };
+
+  //const onChangeSelect= (event: React.ChangeEventHandler<HTMLSelectElement>)
 
   let disabledAddButton: boolean =
     formData.description.length > 0 &&
@@ -58,10 +104,11 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     formData.specialist.length > 0 &&
     formData.healthCheckRating.length > 0;
 
-  console.log("formData.description ", formData.description);
-  console.log("formData.date ", formData.date);
-  console.log("formData.specified", formData.specialist);
-  console.log("formData.healthCheckRating ", formData.healthCheckRating);
+  console.log(
+    "formData.description ",
+    formData.description,
+    formData.description.length > 0,
+  );
 
   console.log("disabledAddButton ", disabledAddButton);
 
@@ -74,6 +121,8 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
 
   const addNewHealthCheckEntry = (event: React.SyntheticEvent) => {
     console.log("adding new healthcheck entry");
+    console.log(event);
+    console.log(formData);
     event.preventDefault();
 
     const target = event.target as typeof event.target & {
@@ -81,8 +130,10 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
       date: { value: string };
       specialist: { value: string };
       healthCheckRating: { value: string };
-      diagnosisCodes: { value: string };
+      diagnosisCodes: { value: string[] };
     };
+
+    console.log(target.healthCheckRating);
 
     const description: string = target.description.value;
     const date: string = target.date.value;
@@ -91,7 +142,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
 
     const diagnosisCodes: string[] | undefined =
       target.diagnosisCodes.value.length > 0
-        ? target.diagnosisCodes.value.split(",")
+        ? target.diagnosisCodes.value
         : undefined;
 
     const newEntry: NewEntry = {
@@ -115,9 +166,18 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
           target.date.value = "";
           target.specialist.value = "";
           target.healthCheckRating.value = "";
-          target.diagnosisCodes.value = "";
+          target.diagnosisCodes.value = [];
 
           disabledAddButton = false;
+
+          clearNotificationTimeout();
+          setAlertProps({
+            severity: "success",
+            notification: `HealthCheck entry added succesfully`,
+          });
+          timeoutId = setTimeout(() => {
+            setAlertProps(undefined);
+          }, 3000);
         })
         .catch((error) => {
           if (axios.isAxiosError(error)) {
@@ -137,12 +197,13 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
               console.log(fieldName);
               console.log(fieldValue);
 
-              clearNotificationTimeout();
-              setNotification(
-                `Error: Invalid ${fieldName} value: ${fieldValue}`,
-              );
+              setAlertProps({
+                severity: "error",
+                notification: `Error: Invalid ${fieldName} value: ${fieldValue}`,
+              });
+
               timeoutId = setTimeout(() => {
-                setNotification("");
+                setAlertProps(undefined);
               }, 3000);
             }
           }
@@ -161,9 +222,15 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
           Add HealthCheck entry
         </Button>
       </Collapse>
-      {notification && (
-        <Alert icon={<ErrorOutlineIcon fontSize="inherit" />} severity="error">
-          {notification}
+      {alertProps && (
+        <Alert
+          iconMapping={{
+            success: <CheckCircleOutline fontSize="inherit" />,
+            error: <ErrorOutlineIcon fontSize="inherit" />,
+          }}
+          severity={alertProps.severity}
+        >
+          {alertProps.notification}
         </Alert>
       )}
 
@@ -187,6 +254,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
               <TextField
                 id="date"
                 label="Date"
+                type="date"
                 variant="standard"
                 onChange={onChange}
               />
@@ -196,18 +264,50 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
                 variant="standard"
                 onChange={onChange}
               />
-              <TextField
-                id="healthCheckRating"
-                label="HealthCheck Rating"
-                variant="standard"
-                type="number"
-                onChange={onChange}
-              />
-              <TextField
-                id="diagnosisCodes"
-                label="Diagnosis codes"
-                variant="standard"
-              />
+              <FormControl sx={{ m: 2 }}>
+                <InputLabel id="healthCheckRating-label">
+                  HealthCheck Rating
+                </InputLabel>
+                <Select
+                  labelId="healthCheckRating-label"
+                  id="healthCheckRating"
+                  value={formData.healthCheckRating}
+                  label="HealthCheck Rating"
+                  onChange={onChangeHealthcheckRating}
+                >
+                  <MenuItem key={0} value={"0"}>
+                    Healthy{" "}
+                  </MenuItem>
+                  <MenuItem key={1} value={"1"}>
+                    LowRisk{" "}
+                  </MenuItem>
+                  <MenuItem key={2} value={"2"}>
+                    HighRisk{" "}
+                  </MenuItem>
+                  <MenuItem key={3} value={"3"}>
+                    CriticalRisk{" "}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl sx={{ m: 2 }}>
+                <InputLabel id="diagnosisCodes-label">
+                  Diagnosis codes
+                </InputLabel>
+                <Select
+                  labelId="diagnosisCodes-label"
+                  id="diagnosisCodes"
+                  multiple
+                  value={formData.diagnosisCodes}
+                  label="Diagnosis codes"
+                  onChange={onChangeDiagnosisCodes}
+                >
+                  {diagnosesFromServer.map((diagnosis) => (
+                    <MenuItem key={diagnosis.code} value={diagnosis.code}>
+                      {diagnosis.code}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </FormControl>
             <Stack
               direction="row"
