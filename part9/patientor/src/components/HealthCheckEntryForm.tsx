@@ -27,7 +27,7 @@ interface Props {
   patientId: string | undefined;
 }
 
-interface FormData {
+interface IFormData {
   description: string;
   date: string;
   specialist: string;
@@ -52,7 +52,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     severity: AlertColor | undefined;
     notification: string;
   }>();
-  const [formData, setFormData] = useState<FormData>(initialFormState);
+  const [formData, setIFormData] = useState<IFormData>(initialFormState);
 
   useEffect(() => {
     const fetchDiagnoses = async () => {
@@ -64,10 +64,10 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     fetchDiagnoses();
   }, []);
 
-  const updateFormData = (id: string, value: string | string[]) => {
+  const updateIFormData = (id: string, value: string | string[]) => {
     console.log(`${id} : ${value}`);
     if (id !== undefined) {
-      setFormData({
+      setIFormData({
         ...formData,
         [id]: value,
       });
@@ -80,20 +80,20 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     let { id, value } = event.target;
 
     console.log(`${id} : ${value}`);
-    updateFormData(id, value);
+    updateIFormData(id, value);
   };
 
   const onChangeHealthcheckRating = (event: SelectChangeEvent) => {
     let { value } = event.target;
     console.log("onChangeHealthcheckRating ", value);
-    updateFormData("healthCheckRating", value);
+    updateIFormData("healthCheckRating", value);
   };
 
   const onChangeDiagnosisCodes = (event: SelectChangeEvent) => {
     let { value } = event.target;
     console.log("onChangeDiagnosisCodes ", value);
 
-    updateFormData("diagnosisCodes", value);
+    updateIFormData("diagnosisCodes", value);
   };
 
   //const onChangeSelect= (event: React.ChangeEventHandler<HTMLSelectElement>)
@@ -123,6 +123,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     console.log("adding new healthcheck entry");
     console.log(event);
     console.log(formData);
+
     event.preventDefault();
 
     const target = event.target as typeof event.target & {
@@ -130,10 +131,10 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
       date: { value: string };
       specialist: { value: string };
       healthCheckRating: { value: string };
-      diagnosisCodes: { value: string[] };
+      diagnosisCodes: { value: string };
     };
 
-    console.log(target.healthCheckRating);
+    console.log(target.diagnosisCodes.value);
 
     const description: string = target.description.value;
     const date: string = target.date.value;
@@ -142,7 +143,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
 
     const diagnosisCodes: string[] | undefined =
       target.diagnosisCodes.value.length > 0
-        ? target.diagnosisCodes.value
+        ? target.diagnosisCodes.value.split(",")
         : undefined;
 
     const newEntry: NewEntry = {
@@ -169,6 +170,8 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
           target.diagnosisCodes.value = [];
 
           disabledAddButton = false;
+
+          setIFormData(initialFormState);
 
           clearNotificationTimeout();
           setAlertProps({
@@ -271,6 +274,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
                 <Select
                   labelId="healthCheckRating-label"
                   id="healthCheckRating"
+                  name="healthCheckRating"
                   value={formData.healthCheckRating}
                   label="HealthCheck Rating"
                   onChange={onChangeHealthcheckRating}
@@ -296,6 +300,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
                 <Select
                   labelId="diagnosisCodes-label"
                   id="diagnosisCodes"
+                  name="diagnosisCodes"
                   multiple
                   value={formData.diagnosisCodes}
                   label="Diagnosis codes"
@@ -321,7 +326,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
                 color="error"
                 onClick={() => {
                   setIsOpen(false);
-                  setFormData(initialFormState);
+                  setIFormData(initialFormState);
                 }}
               >
                 Cancel
