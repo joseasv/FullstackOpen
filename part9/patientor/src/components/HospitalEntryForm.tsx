@@ -8,27 +8,32 @@ import {
   Stack,
   FormLabel,
   AlertColor,
+  MenuItem,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
 } from "@mui/material";
-import React, { useState } from "react";
-import { NewEntry, Entry } from "../types";
+import React, { useState, useEffect } from "react";
+import { NewEntry, Entry, Diagnosis } from "../types";
 import patientsService from "../services/patients";
 import axios from "axios";
 import { ZodIssue } from "zod";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CheckCircleOutline } from "@mui/icons-material";
-import { Label } from "@mui/icons-material";
+import diagnosesService from "../services/diagnoses";
 
 interface Props {
   updatePatient: (data: Entry) => void;
   patientId: string | undefined;
 }
 
-interface FormData {
+interface IFormData {
   description: string;
   date: string;
   specialist: string;
   dischargeDate: string;
   dischargeCriteria: string;
+  diagnosisCodes: string[];
 }
 
 const initialFormState = {
@@ -37,26 +42,54 @@ const initialFormState = {
   specialist: "",
   dischargeDate: "",
   dischargeCriteria: "",
+  diagnosisCodes: [],
 };
 
 const HospitalEntryForm = ({ updatePatient, patientId }: Props) => {
   const [isOpen, setIsOpen] = useState<boolean | undefined>(false);
+  const [diagnosesFromServer, setDiagnosesFromServer] = useState<Diagnosis[]>(
+    [],
+  );
   const [alertProps, setAlertProps] = useState<{
     severity: AlertColor | undefined;
     notification: string;
   }>();
-  const [formData, setFormData] = useState<FormData>(initialFormState);
+  const [formData, setFormData] = useState<IFormData>(initialFormState);
+
+  useEffect(() => {
+    const fetchDiagnoses = async () => {
+      const diagnosesData: Diagnosis[] = await diagnosesService.getAll();
+
+      setDiagnosesFromServer(diagnosesData);
+    };
+
+    fetchDiagnoses();
+  }, []);
+
+  const updateFormData = (id: string, value: string | string[]) => {
+    console.log(`${id} : ${value}`);
+    if (id !== undefined) {
+      setFormData({
+        ...formData,
+        [id]: value,
+      });
+
+      console.log("formData ", formData);
+    }
+  };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
 
-    console.log(`${id} : ${value}`);
-    setFormData({
-      ...formData,
-      [id]: value,
-    });
+    updateFormData(id, value);
+  };
 
-    console.log("formData ", formData);
+  const onChangeDiagnosisCodes = (event: SelectChangeEvent) => {
+    let { value, name } = event.target;
+    console.log("onChangeDiagnosisCodes name", name);
+    console.log("onChangeDiagnosisCodes ", value);
+
+    updateFormData(name, value);
   };
 
   let disabledAddButton: boolean =
@@ -94,6 +127,8 @@ const HospitalEntryForm = ({ updatePatient, patientId }: Props) => {
       diagnosisCodes: { value: string };
     };
 
+    console.log(target.diagnosisCodes);
+
     const description: string = target.description.value;
     const date: string = target.date.value;
     const specialist: string = target.specialist.value;
@@ -130,6 +165,8 @@ const HospitalEntryForm = ({ updatePatient, patientId }: Props) => {
           target.diagnosisCodes.value = "";
 
           disabledAddButton = false;
+
+          setFormData(initialFormState);
 
           clearNotificationTimeout();
           setAlertProps({
@@ -210,18 +247,22 @@ const HospitalEntryForm = ({ updatePatient, patientId }: Props) => {
               <TextField
                 id="description"
                 label="Description"
+                required
                 variant="standard"
                 onChange={onChange}
               />
               <TextField
                 id="date"
                 label="Date"
+                required
+                type="date"
                 variant="standard"
                 onChange={onChange}
               />
               <TextField
                 id="specialist"
                 label="Specialist"
+                required
                 variant="standard"
                 onChange={onChange}
               />
@@ -231,22 +272,40 @@ const HospitalEntryForm = ({ updatePatient, patientId }: Props) => {
                   <TextField
                     id="dischargeDate"
                     label="Date"
+                    required
+                    type="date"
                     variant="standard"
                     onChange={onChange}
                   />
                   <TextField
                     id="dischargeCriteria"
                     label="Criteria"
+                    required
                     variant="standard"
                     onChange={onChange}
                   />
                 </FormControl>
               </Box>
-              <TextField
-                id="diagnosisCodes"
-                label="Diagnosis codes"
-                variant="standard"
-              />
+              <FormControl sx={{ m: 2 }}>
+                <InputLabel id="diagnosisCodes-label">
+                  Diagnosis codes
+                </InputLabel>
+                <Select
+                  labelId="diagnosisCodes-label"
+                  id="diagnosisCodes"
+                  name="diagnosisCodes"
+                  multiple
+                  value={formData.diagnosisCodes}
+                  label="Diagnosis codes"
+                  onChange={onChangeDiagnosisCodes}
+                >
+                  {diagnosesFromServer.map((diagnosis) => (
+                    <MenuItem key={diagnosis.code} value={diagnosis.code}>
+                      {diagnosis.code}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </FormControl>
             <Stack
               direction="row"

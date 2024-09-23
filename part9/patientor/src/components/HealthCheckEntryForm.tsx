@@ -52,7 +52,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     severity: AlertColor | undefined;
     notification: string;
   }>();
-  const [formData, setIFormData] = useState<IFormData>(initialFormState);
+  const [formData, setFormData] = useState<IFormData>(initialFormState);
 
   useEffect(() => {
     const fetchDiagnoses = async () => {
@@ -64,10 +64,10 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     fetchDiagnoses();
   }, []);
 
-  const updateIFormData = (id: string, value: string | string[]) => {
+  const updateFormData = (id: string, value: string | string[]) => {
     console.log(`${id} : ${value}`);
     if (id !== undefined) {
-      setIFormData({
+      setFormData({
         ...formData,
         [id]: value,
       });
@@ -80,20 +80,20 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
     let { id, value } = event.target;
 
     console.log(`${id} : ${value}`);
-    updateIFormData(id, value);
+    updateFormData(id, value);
   };
 
   const onChangeHealthcheckRating = (event: SelectChangeEvent) => {
     let { value } = event.target;
     console.log("onChangeHealthcheckRating ", value);
-    updateIFormData("healthCheckRating", value);
+    updateFormData("healthCheckRating", value);
   };
 
   const onChangeDiagnosisCodes = (event: SelectChangeEvent) => {
     let { value } = event.target;
     console.log("onChangeDiagnosisCodes ", value);
 
-    updateIFormData("diagnosisCodes", value);
+    updateFormData("diagnosisCodes", value);
   };
 
   //const onChangeSelect= (event: React.ChangeEventHandler<HTMLSelectElement>)
@@ -167,11 +167,11 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
           target.date.value = "";
           target.specialist.value = "";
           target.healthCheckRating.value = "";
-          target.diagnosisCodes.value = [];
+          target.diagnosisCodes.value = "";
 
           disabledAddButton = false;
 
-          setIFormData(initialFormState);
+          setFormData(initialFormState);
 
           clearNotificationTimeout();
           setAlertProps({
@@ -251,12 +251,14 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
               <TextField
                 id="description"
                 label="Description"
+                required
                 variant="standard"
                 onChange={onChange}
               />
               <TextField
                 id="date"
                 label="Date"
+                required
                 type="date"
                 variant="standard"
                 onChange={onChange}
@@ -264,11 +266,12 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
               <TextField
                 id="specialist"
                 label="Specialist"
+                required
                 variant="standard"
                 onChange={onChange}
               />
               <FormControl sx={{ m: 2 }}>
-                <InputLabel id="healthCheckRating-label">
+                <InputLabel required id="healthCheckRating-label">
                   HealthCheck Rating
                 </InputLabel>
                 <Select
@@ -326,7 +329,7 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
                 color="error"
                 onClick={() => {
                   setIsOpen(false);
-                  setIFormData(initialFormState);
+                  setFormData(initialFormState);
                 }}
               >
                 Cancel
