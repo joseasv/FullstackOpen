@@ -6,7 +6,6 @@ import {
   TextField,
   Alert,
   Stack,
-  Container,
   InputLabel,
   FormLabel,
   AlertColor,
@@ -14,14 +13,13 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import React, { startTransition, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { NewEntry, Entry, Diagnosis } from "../types";
 import patientsService from "../services/patients";
 import axios from "axios";
 import { ZodIssue } from "zod";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { CheckCircleOutline } from "@mui/icons-material";
-import { Label } from "@mui/icons-material";
 import diagnosesService from "../services/diagnoses";
 
 interface Props {
@@ -92,7 +90,7 @@ const OccupationalHealthcareEntryForm = ({
   };
 
   const onChangeDiagnosisCodes = (event: SelectChangeEvent) => {
-    let { value, name } = event.target;
+    const { value, name } = event.target;
     console.log("onChangeDiagnosisCodes name", name);
     console.log("onChangeDiagnosisCodes ", value);
 

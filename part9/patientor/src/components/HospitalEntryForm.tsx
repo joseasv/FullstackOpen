@@ -85,7 +85,7 @@ const HospitalEntryForm = ({ updatePatient, patientId }: Props) => {
   };
 
   const onChangeDiagnosisCodes = (event: SelectChangeEvent) => {
-    let { value, name } = event.target;
+    const { value, name } = event.target;
     console.log("onChangeDiagnosisCodes name", name);
     console.log("onChangeDiagnosisCodes ", value);
 

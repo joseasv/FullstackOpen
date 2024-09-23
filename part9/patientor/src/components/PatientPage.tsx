@@ -1,8 +1,7 @@
-import { Diagnosis, Entry, Gender, NewEntry, Patient } from "../types";
+import { Entry, Gender, Patient } from "../types";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import patientService from "../services/patients";
-import diagnosesService from "../services/diagnoses";
 import EntryDetails from "./EntryDetails";
 import HealthCheckEntryForm from "./HealthCheckEntryForm";
 
@@ -31,7 +30,7 @@ const PatientPage = () => {
     };
 
     void fetchPatient();
-  }, []);
+  });
 
   const updatePatient = (newEntry: Entry) => {
     if (data !== undefined) {

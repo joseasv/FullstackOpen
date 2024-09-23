@@ -9,11 +9,10 @@ import {
   Stack,
   InputLabel,
   AlertColor,
-  FormControlClasses,
   SelectChangeEvent,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import { NewEntry, Entry, Diagnosis, HealthCheckRating } from "../types";
+import { NewEntry, Entry, Diagnosis } from "../types";
 import patientsService from "../services/patients";
 import axios from "axios";
 import { ZodIssue } from "zod";
@@ -77,20 +76,20 @@ const HealthCheckEntryForm = ({ updatePatient, patientId }: Props) => {
   };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let { id, value } = event.target;
+    const { id, value } = event.target;
 
     console.log(`${id} : ${value}`);
     updateFormData(id, value);
   };
 
   const onChangeHealthcheckRating = (event: SelectChangeEvent) => {
-    let { value } = event.target;
+    const { value } = event.target;
     console.log("onChangeHealthcheckRating ", value);
     updateFormData("healthCheckRating", value);
   };
 
   const onChangeDiagnosisCodes = (event: SelectChangeEvent) => {
-    let { value } = event.target;
+    const { value } = event.target;
     console.log("onChangeDiagnosisCodes ", value);
 
     updateFormData("diagnosisCodes", value);
